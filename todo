@@ -1,0 +1,40 @@
+#!/bin/bash
+TODOPATH="$HOME/bin/files/todo"
+SETTING=$1
+if [ "$SETTING" == "" ]; then
+  SETTING="-l"
+fi
+if [ "$SETTING" == "-l" ] || [ "$SETTING" == "-list" ]; then
+  COUNT=0
+  while read LINE; do
+    COUNT=$(( $COUNT + 1))
+    if [[ $LINE =~ "[HIGH]"* ]]; then
+      setterm -fore red
+    elif [[ $LINE =~ "[NORMAL]"* ]]; then
+      setterm -fore white
+    elif [[ $LINE =~ "[LOW]"* ]]; then
+      setterm -fore green
+    fi
+    printf "[$COUNT]$LINE\n"
+    printf "\e[0m"
+  done < $TODOPATH
+elif [ "$SETTING" == "-n" ] || [ "$SETTING" == "-new" ]; then
+  LEVEL=$2
+  ENTRY=""
+  STRING=$3
+  if [ "$LEVEL" == "1" ] || [ "$LEVEL" == "high" ]; then
+    ENTRY="[HIGH]"
+  elif [ "$LEVEL" == "2" ] || [ "$LEVEL" == "normal" ]; then
+    ENTRY="[NORMAL]"
+  elif [ "$LEVEL" == "3" ] || [ "$LEVEL" == "low" ]; then
+    ENTRY="[LOW]"
+  else
+    ENTRY="[NORMAL]"
+    STRING=$2
+  fi
+  ENTRY="$ENTRY $STRING"
+  echo "$ENTRY" >> $TODOPATH
+elif [ "$SETTING" == "-d" ] || [ "$SETTING" == "-done" ]; then
+  LINE=$2
+  sed -i -e "$LINE d" $TODOPATH
+fi

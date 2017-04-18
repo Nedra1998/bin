@@ -1,0 +1,29 @@
+#!/bin/bash
+FILE="$1"
+if [[ "$FILE" == "" ]]; then
+  FILE="out.log"
+fi
+
+if [[ -e "$FILE" ]]; then
+  while read LINE; do
+    if [[ $LINE == "[ERROR]"* ]]; then
+      setterm -fore red
+    elif [[ $LINE =~ "[WARNING]"* ]]; then
+      setterm -fore yellow
+    elif [[ $LINE =~ "[TRACE]"* ]]; then
+      setterm -fore blue
+    elif [[ $LINE =~ "[DEBUG]"* ]]; then
+      setterm -fore magenta
+    elif [[ $LINE =~ "[SUCCESS]"* ]]; then
+      setterm -fore green
+    elif [[ $LINE =~ "[INFO]"* ]]; then
+      setterm -fore white
+    elif [[ $LINE =~ "[DATA]"* ]]; then
+      setterm -fore cyan
+    fi 
+    printf "$LINE\n"
+    printf "\e[0m"
+  done < $FILE
+else
+  printf "No log file in current directory\n"
+fi

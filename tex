@@ -1,0 +1,31 @@
+#!/bin/bash
+shopt -s extglob
+FILE=${1%.*}
+OPTION=$2
+FORMAT=$3
+if [ "$OPTION" == -m ] || [ "$OPTION" == "" ]; then
+	pdflatex $FILE.tex
+	pdflatex $FILE.tex
+fi
+if [ "$OPTION" == -b ]; then
+	pdflatex $FILE.tex
+	bibtex $FILE.aux
+	pdflatex $FILE.tex
+	pdflatex $FILE.tex
+	evince $FILE.pdf
+fi
+if [ "$OPTION" == -c ]; then
+	rm $FILE.!(tex)
+fi
+if [ "$OPTION" == -v ]; then
+	evince $FILE.pdf
+fi
+if [ "$OPTION" == -e ]; then
+	vim $FILE.tex
+fi
+if [ "$OPTION" == -n ]; then
+	if [ "$FORMAT" == "" ]; then
+		FORMAT="0"
+	fi
+	cp ~/bin/files/latexlayouts/Layout$FORMAT.tex ./$FILE.tex
+fi

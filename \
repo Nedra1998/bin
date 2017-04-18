@@ -1,0 +1,3 @@
+#!/bin/bash
+TODOPATH="$HOME/bin/files/todo"
+printf "$TODOPATH\n"
