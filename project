@@ -1,0 +1,108 @@
+#!/bin/bash
+action=$1
+title=""
+name="project"
+links="-std=c++11"
+author="Arden Rasmussen"
+version="1.0"
+copy="Arden Rasmussen"
+docs=true
+ShowHelp () 
+{
+  printf "Help Page\n"
+  printf "==========\n"
+  printf ""
+  exit 1
+}
+
+CreateSubDir ()
+{
+  printf "Creating subdirectory\n"
+  cp ~/bin/.project_files/Sub_Makefile ./Makefile
+}
+
+CreateDocs () 
+{
+  printf "Creating documentation for $name\n"
+  mkdir "$name/docs"
+  mkdir "$name/docs/build"
+  mkdir "$name/docs/source"
+  mkdir "$name/docs/source/_static"
+  cp ~/bin/.project_files/docs/Makefile ./$name/docs/Makefile
+  cp ~/bin/.project_files/docs/source/conf.py ./$name/docs/source/conf.py
+  cp ~/bin/.project_files/docs/source/index.rst ./$name/docs/source/index.rst
+}
+
+CreateProject () 
+{
+  printf "Creating Project $name\n"
+  subdir=$name"_files"
+  mkdir "$name"
+  mkdir "$name/$subdir"
+  cp ~/bin/.project_files/source.cpp ./$name/source.cpp
+  cp ~/bin/.project_files/Makefile ./$name/Makefile
+  cp ~/bin/.project_files/Sub_Makefile ./$name/$subdir/Makefile
+  cp ~/bin/.project_files/.ycm_extra_conf.py ./$name/.ycm_extra_conf.py
+  cp ~/bin/.project_files/.gitignore ./$name/.gitignore
+  if [ $docs == true ]; then
+    CreateDocs
+  fi
+  SetVars
+}
+
+SetVars ()
+{
+  if [ "$title" == "" ]; then
+    title="${name^}"
+  fi
+  underline=$(printf '%*s\n' $((${#title} + 14)) | tr ' ' =)
+  cd $name
+  find -type f -exec sed -i "s/project_title/$title/g" {} +
+  find -type f -exec sed -i "s/project_name/$name/g" {} +
+  find -type f -exec sed -i "s/project_link/$links/g" {} +
+  find -type f -exec sed -i "s/project_author/$author/g" {} +
+  find -type f -exec sed -i "s/project_version/$version/g" {} +
+  find -type f -exec sed -i "s/project_copy/$copy/g" {} +
+  find -type f -exec sed -i "s/title_underline/$underline/g" {} +
+}
+
+GetOpts ()
+{
+  for (( i=2; i<=$#; i++)); do
+    j=$((i+1))
+    GetOpt ${!i} ${!j}
+  done
+}
+
+GetOpt ()
+{
+  opt=$1
+  arg=$2
+  if [ "$opt" == "-n" ] || [ "$opt" == "-name" ]; then
+    name=$arg
+  elif [ "$opt" == "-d" ] || [ "$opt" == "-doc" ]; then
+    if [ "$arg" == "true" ] || [ "$arg" == "t" ]; then
+      docs=true
+    elif [ "$arg" == "false" ] || [ "$arg" == "f" ]; then
+      docs=false
+    fi
+  elif [ "$opt" == "-l" ] || [ "$opt" == "-link" ]; then
+    links=$arg
+  fi
+}
+
+if [ "$action" == "new" ]; then
+  GetOpts "$@"
+  CreateProject
+elif [ "$action" == "create" ]; then
+  if [ "$2" == "sub" ]; then
+    CreateSubDir
+  else
+    GetOpts "$@"
+    CreateDocs
+  fi
+elif [ "$action" == "--help" ]; then
+  ShowHelp
+else
+  ShowHelp
+fi
