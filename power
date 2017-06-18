@@ -1,0 +1,35 @@
+#!/bin/bash
+
+SetColor(){
+  printf "\e[$1""m"
+}
+
+Percent(){
+  battery_percent=`acpi -b | grep -P -o '[0-9]+(?=%)'`
+  time=`acpi -b | cut -d " " -f 5`
+  if [ $battery_percent -ge 60 ]; then
+    color='32'
+  elif [ $battery_percent -ge 40 ]; then
+    color='33'
+  elif [ $battery_percent -le 40 ]; then
+    color='31'
+  fi
+  SetColor $color
+  printf "$battery_percent%%  ($time)"
+}
+Charge(){
+  charge=`acpi -b | cut -d " " -f 3`
+  if [ "$charge" == "Discharging," ]; then
+    color='31'
+    char='\u25BC'
+  elif [ "$charge" == "Charging," ]; then
+    color='32'
+    char='\25B2'
+  fi
+  SetColor $color
+  printf "$char  "
+}
+
+Charge
+Percent
+printf "\n"
