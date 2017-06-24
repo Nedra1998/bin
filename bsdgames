@@ -1,0 +1,5 @@
+#!/bin/bash
+
+while read g; do
+  printf "$g\n"
+done <~/bin/games.txt

@@ -1,35 +1,51 @@
 #!/bin/bash
 
 SetColor(){
-  printf "\e[$1""m"
+  printf "\e[38;5;$1""m"
 }
 
 Percent(){
   battery_percent=`acpi -b | grep -P -o '[0-9]+(?=%)'`
-  time=`acpi -b | cut -d " " -f 5`
   if [ $battery_percent -ge 60 ]; then
-    color='32'
+    color='2'
   elif [ $battery_percent -ge 40 ]; then
-    color='33'
+    color='3'
   elif [ $battery_percent -le 40 ]; then
-    color='31'
+    color='1'
   fi
   SetColor $color
-  printf "$battery_percent%%  ($time)"
+  printf "$battery_percent%% "
 }
+
 Charge(){
   charge=`acpi -b | cut -d " " -f 3`
   if [ "$charge" == "Discharging," ]; then
-    color='31'
+    color='1'
     char='\u25BC'
   elif [ "$charge" == "Charging," ]; then
-    color='32'
-    char='\25B2'
+    color='2'
+    char='\u25B2'
   fi
   SetColor $color
-  printf "$char  "
+  printf "$char "
+}
+
+Time(){
+  time=`acpi -b | cut -d " " -f 5`
+  percent=`acpi -b | grep -P -o '[0-9]+(?=%)'`
+  if [ $battery_percent -ge 60 ]; then
+    color='2'
+  elif [ $battery_percent -ge 40 ]; then
+    color='3'
+  elif [ $battery_percent -le 40 ]; then
+    color='1'
+  fi
+  printf "\e[0m("
+  SetColor $color
+  printf "$time"
+  printf "\e[0m)\n"
 }
 
 Charge
 Percent
-printf "\n"
+Time
