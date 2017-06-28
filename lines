@@ -1,0 +1,181 @@
+#!/bin/bash
+
+cpp=("cpp" "hpp" "cc" "hh" "cxx" "hxx" "c++" "h++")
+make=("Makefile")
+bash=("sh")
+python=("py")
+latex=("tex" "aux")
+rst=("rst")
+md=("md" "markdown")
+java=("java" "dpj" "js" "jsp")
+perl=("pl", "pm")
+assembler=("s")
+text=("txt")
+xml=("xml")
+json=("json")
+
+dir=$1
+total_width=0
+name_width=0
+value_width=0
+perc_width=3
+file_width=0
+file_perc_width=3
+full_width=false
+hidden=false
+matched=true
+
+total_lines=0
+total_files=0
+declare -A lines
+declare -A files
+
+Count ()
+{
+  for filename in $(find $dir -type f -not -path '*/\.*')
+  do
+    name=$(basename "$filename")
+    ext="${name##*.}"
+    length=$(wc -l < $filename)
+    matched=false
+    AddCount C++ $ext $length "${cpp[@]}"
+    AddCount GNUMake $ext $length "${make[@]}"
+    AddCount Bash $ext $length "${bash[@]}"
+    AddCount Python $ext $length "${python[@]}"
+    AddCount LaTex $ext $length "${latex[@]}"
+    AddCount reStructuredText $ext $length "${rst[@]}"
+    AddCount Markdown $ext $length "${md[@]}"
+    AddCount Java $ext $length "${java[@]}"
+    AddCount Perl $ext $length "${perl[@]}"
+    AddCount Assembler $ext $length "${assembler[@]}"
+    AddCount Text $ext $length "${text[@]}"
+    AddCount XML $ext $length "${xml[@]}"
+    AddCount JSON $ext $length "${json[@]}"
+  done
+  for i in "${files[@]}"
+  do
+    if [[ $i -gt $file_width ]]
+    then
+      file_width=${#i}
+    fi
+  done
+}
+
+AddCount()
+{
+  if [[ $matched == false ]]
+  then
+    arr=("$@")
+    lang="$1"
+    seeking="$2"
+    length=$3
+    for ele in "${arr[@]:3}"
+    do
+      if [[ $ele == $seeking ]]
+      then
+        ((lines["$lang"]+=length))
+        ((files["$lang"]++))
+        ((total_files++))
+        matched=true
+        break
+      fi
+    done
+  fi
+}
+
+GetTotal ()
+{
+  for key in ${!lines[@]}
+  do
+    length=${#key}
+    value_length=${#lines[${key}]}
+    if [[  $length -gt $name_width ]]
+    then
+      name_width=$length
+    fi
+    if [[ $value_length -gt $value_width ]]; then
+      value_width=$value_length
+    fi
+    total_lines=$(( total_lines + lines[$key] ))
+  done
+  if [[ $total_lines == 0 ]]
+  then
+    printf "No lines of code in directory $dir\n"
+    total=1
+    return 1
+  fi
+  total_width=$(( name_width + value_width + file_width + perc_width + file_perc_width + 12))
+  if [[ $full_width == true ]]
+  then
+    total_width=$(tput cols)
+    name_width=$(( (total_width / 5) - 2))
+    value_width=$(( (total_width / 5) - 2))
+    perc_width=$(( (total_width / 5) - 3))
+    file_width=$(( (total_width / 5) - 2))
+    file_perc_width=$(( (total_width / 5) - 3))
+  fi
+}
+
+PrintTitle ()
+{
+  printf "%*s\n" $((total_width / 2)) "Code Line Count"
+  printf " %*.*s  %*.*s   %*.*s  %*.*s   %*.*s\n" $name_width $name_width "Language" $value_width $value_width "Line Count" $perc_width $perc_width "Line Percent" $file_width $file_width "File Count" $file_perc_width $file_perc_width "File Percent"
+}
+
+PrintLine ()
+{
+  printf "%*s\n" $1 | tr ' ' $2
+}
+
+PrintEntry () {
+  line_perc=$(( (100 * lines[$1]) / total_lines ))
+  file_perc=$(( (100 * files[$1]) / total_files ))
+  printf " %*s  %*s  %*i%%  %*s  %*i%%\n" $name_width "$1" $value_width "${lines[$1]}" $perc_width $line_perc $file_width "${files[$1]}" $file_perc_width $file_perc
+}
+
+PrintMax ()
+{
+  max_lang=0
+  for key in ${!lines[@]}
+  do
+    if [[ ${lines[${key}]} -gt ${lines[${max_lang}]} ]]
+    then
+      max_lang=$key
+    fi
+  done
+  PrintEntry $max_lang
+}
+
+PrintTotal ()
+{
+  count=${#lines[@]}
+  printf " %*s  %*s  %*i%%  %*s  %*i%%\n" $name_width "${count}" $value_width "$total_lines" $perc_width 100 $file_width "$total_files" $file_perc_width 100
+}
+
+PrintList ()
+{ 
+  for key in ${!lines[@]}
+  do
+    PrintEntry ${key}
+  done | sort
+}
+
+if [[ $dir == "-f" ]] || [[ $2 == "-f" ]]
+then
+  full_width=true
+fi
+
+if [[ -z $dir ]] || [[ $dir == "-f" ]]
+then
+  dir=$(pwd)
+fi
+
+Count
+GetTotal
+PrintTitle
+PrintLine $total_width =
+PrintMax
+PrintLine $total_width =
+PrintList
+PrintLine $total_width =
+PrintTotal
