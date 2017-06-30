@@ -1,4 +1,6 @@
 *.o
 *.d
 *.log
-project_name
+build/*
+pessum
+pessum-test

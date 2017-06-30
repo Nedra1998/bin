@@ -2,7 +2,7 @@
 action=$1
 title=""
 name="project"
-links="-std=c++11"
+links=""
 author="Arden Rasmussen"
 version="1.0"
 copy="Arden Rasmussen"
@@ -15,38 +15,12 @@ ShowHelp ()
   exit 1
 }
 
-CreateSubDir ()
-{
-  printf "Creating subdirectory\n"
-  cp ~/bin/.project_files/Sub_Makefile ./Makefile
-}
-
-CreateDocs () 
-{
-  printf "Creating documentation for $name\n"
-  mkdir "$name/docs"
-  mkdir "$name/docs/build"
-  mkdir "$name/docs/source"
-  mkdir "$name/docs/source/_static"
-  cp ~/bin/.project_files/docs/Makefile ./$name/docs/Makefile
-  cp ~/bin/.project_files/docs/source/conf.py ./$name/docs/source/conf.py
-  cp ~/bin/.project_files/docs/source/index.rst ./$name/docs/source/index.rst
-}
-
 CreateProject () 
 {
   printf "Creating Project $name\n"
-  subdir=$name"_files"
   mkdir "$name"
-  mkdir "$name/$subdir"
-  cp ~/bin/.project_files/source.cpp ./$name/source.cpp
-  cp ~/bin/.project_files/Makefile ./$name/Makefile
-  cp ~/bin/.project_files/Sub_Makefile ./$name/$subdir/Makefile
-  cp ~/bin/.project_files/.ycm_extra_conf.py ./$name/.ycm_extra_conf.py
-  cp ~/bin/.project_files/.gitignore ./$name/.gitignore
-  if [ $docs == true ]; then
-    CreateDocs
-  fi
+  cp ~/bin/.project_files/* ./$name/ -r 
+  subdir=$name"_files"
   SetVars
 }
 
@@ -80,12 +54,6 @@ GetOpt ()
   arg=$2
   if [ "$opt" == "-n" ] || [ "$opt" == "-name" ]; then
     name=$arg
-  elif [ "$opt" == "-d" ] || [ "$opt" == "-doc" ]; then
-    if [ "$arg" == "true" ] || [ "$arg" == "t" ]; then
-      docs=true
-    elif [ "$arg" == "false" ] || [ "$arg" == "f" ]; then
-      docs=false
-    fi
   elif [ "$opt" == "-l" ] || [ "$opt" == "-link" ]; then
     links=$arg
   fi
@@ -94,13 +62,6 @@ GetOpt ()
 if [ "$action" == "new" ]; then
   GetOpts "$@"
   CreateProject
-elif [ "$action" == "create" ]; then
-  if [ "$2" == "sub" ]; then
-    CreateSubDir
-  else
-    GetOpts "$@"
-    CreateDocs
-  fi
 elif [ "$action" == "--help" ]; then
   ShowHelp
 else
