@@ -61,7 +61,7 @@ $(BASE_PATH)/$(BUILD_DIR)/$(DIR)/%.o: %.cpp
 	$(call Compile,$(COMPILER) -I../$(SOURCE_DIR) $(CPPFLAGS) $< -o $@,Compiling)
 
 $(EXE): $(OBJ_FILES)
-	$(call Compile,$(COMPILER) $(LINK) -I../$(SOURCE_DIR) $(OBJ_FILES) $(SOURCE_OBJ) -o $(EXE) $(GTEST) ,Linking) 
+	$(call Compile,$(COMPILER)  -I../$(SOURCE_DIR) $(OBJ_FILES) $(SOURCE_OBJ) $(LINK) -o $(EXE) $(GTEST) ,Linking) 
 
 .PHONY : clean
 clean:

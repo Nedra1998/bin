@@ -191,12 +191,15 @@ source-clean:
 
 .PHONY : test-make
 test-make:
-	printf "%b\n" "$(BUILD_COLOR)TEST$(NO_COLOR)"
-	cd $(TEST_DIR) && $(MAKE)
+	if [[ -z "$(TEST_DIR)" ]] && [[ -d "$(TEST_DIR)" ]]; then
+	  printf "%b\n" "$(BUILD_COLOR)TEST$(NO_COLOR)"; \
+	  cd $(TEST_DIR) && $(MAKE); \
+	fi
 
 .PHONY : test-clean
 test-clean:
-	printf "%b\n" "$(CLEAN_COLOR)TEST$(NO_COLOR)"
-	cd $(TEST_DIR) && $(MAKE) clean
-
+	if [[ -z "$(TEST_DIR)" ]] && [[ -d "$(TEST_DIR)" ]]; then
+	  printf "%b\n" "$(CLEAN_COLOR)TEST$(NO_COLOR)"; \
+	  cd $(TEST_DIR) && $(MAKE) clean; \
+	fi
 

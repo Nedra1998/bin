@@ -58,7 +58,7 @@ $(BASE_PATH)/$(BUILD_DIR)/$(DIR)/%.o: %.cpp
 
 
 $(EXE): $(OBJ_FILES)
-	$(call Compile,$(COMPILER) $(OBJ_FILES) -o $(EXE),Linking) 
+	$(call Compile,$(COMPILER) $(OBJ_FILES) $(LINK) -o $(EXE),Linking) 
 
 .PHONY : clean
 clean:
