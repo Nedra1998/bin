@@ -1,0 +1,64 @@
+#!/usr/bin/python
+
+import sys, getopt
+
+def GetSettings():
+    file_max = open("/sys/class/backlight/intel_backlight/max_brightness","r")
+    max_bright = file_max.readline()
+    file_max.close()
+    file_current = open("/sys/class/backlight/intel_backlight/brightness","r")
+    current_bright = file_current.readline()
+    file_current.close()
+    return max_bright, current_bright
+
+def Save(value, max_bright):
+    value = int((value / 100) * max_bright)
+    fs = open("/sys/class/backlight/intel_backlight/brightness","w")
+    fs.write(str(value))
+    fs.close()
+
+def Help():
+    print "brightness.py"
+
+def Get(percent):
+    print "{}".format(int(percent))
+
+def Inc(value, percent, max_bright):
+    percent += value
+    if percent > max_bright:
+        percent = max_bright
+    Save(percent,max_bright)
+
+def Dec(value, percent, max_bright):
+    percent -= value
+    if percent < 0:
+        percent = 0
+    Save(percent, max_bright)
+
+def Set(value, max_bright):
+    if value < 0:
+        value = 0
+    elif value > max_bright:
+        value = max_bright
+    Save(value, max_bright)
+
+def main(argv):
+    max_bright,current_bright = GetSettings()
+    percent = 100 * float(current_bright) / float(max_bright)
+    opts, args = getopt.getopt(argv,"hgi:d:s:",["help","get","increment=","decrement=","set="])
+    for opt,arg in opts:
+        if opt in ("-h", "--help"):
+            Help()
+        elif opt in ("-g", "--get"):
+            Get(percent)
+        elif opt in ("-i", "--increment"):
+            Inc(float(arg), percent, float(max_bright))
+        elif opt in ("-d", "--decrement"):
+            Dec(float(arg), percent, float(max_bright))
+        elif opt in ("-s", "--set"):
+            Set(float(arg), float(max_bright))
+        else:
+            Help()
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
