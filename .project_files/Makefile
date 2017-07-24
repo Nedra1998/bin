@@ -3,15 +3,20 @@ SHELL = /bin/bash
 export SOURCE_DIR = source
 export TEST_DIR = test 
 export BUILD_DIR = build
+export GTEST_DIR = external/googletest/googletest
+export GH_PAGES_SOURCE = docs/source docs/Makefile
 
-export COMPILER = clang++
+export COMPILER = g++
 export CPPFLAGS = -MMD -std=c++11 -w -c
-export LINK = project_link
+export LINK = project_link 
 export NAME = project_name
 export TYPE = lib
 
 export LIB_PATH = /usr/local/
 export EXE_PATH = ~/bin/
+
+export GCOV_LINK = -lgcov --coverage
+export GCOV_FLAG = -fprofile-arcs -ftest-coverage
 
 export RED = \033[0;31m
 export GREEN = \033[0;32m
@@ -28,8 +33,9 @@ export OK_COLOR = $(GREEN)
 export CLEAN_COLOR = $(YELLOW)
 export INSTALL_COLOR = $(MAGENTA)
 
-export WIDTH=$(shell printf $$(($(call FindLongestFile, $(SOURCE_DIR)) + 14)))
+export WIDTH=$(shell printf $$(($(call FindLongestFile, $(SOURCE_DIR)) + 19)))
 export BASE_PATH=$(shell pwd)
+export LINE=$(call Line,$(WIDTH),.)
 
 ifndef .VERBOSE
   .SILENT:
@@ -58,6 +64,37 @@ var="$(1)"; \
     printf '%s%*.*s' "$$var" 0 $$(($$width - $${#var} - 1)) "$(call Line,$(2),.)"
 endef
 
+
+define PrintCpp
+var="$(1)"; \
+    var=$${var%.*}.cpp; \
+    width="$(2)";\
+    printf '%s%*.*s' "$$var" 0 $$(($$width - $${#var} - 1)) "$(call Line,$(2),.)"
+endef
+
+define Compile
+mkdir -p $(@D)
+if [[ $(2) == Linking ]]; then \
+  var="$(2) $(@F)";\
+  width="$(WIDTH)";\
+  printf '%s%*.*s' "$$var" 0 $$(($$width - $${#var} - 1)) "$(LINE)"; \
+else \
+  var="$(2) $(@F)";\
+  var=$${var%.*}.cpp;\
+  width="$(WIDTH)";\
+  printf '%s%*.*s' "$$var" 0 $$(($$width - $${#var} - 1)) "$(LINE)"; \
+fi
+$(1) 2> $@.log; \
+  RESULT=$$?; \
+  if [ $$RESULT -ne 0 ]; then \
+    printf "%b\n" "$(ERR_COLOR)\xE2\x9D\x8C $(NO_COLOR)"; \
+  else \
+    printf "%b\n" "$(OK_COLOR)\xE2\x9C\x94 $(NO_COLOR)"; \
+  fi; \
+  cat $@.log; \
+  rm -f $@.log
+endef
+
 define check =
   printf "%b\n" "$(OK_COLOR)\xE2\x9C\x94 $(NO_COLOR)"
 endef
@@ -66,13 +103,13 @@ define cross =
   printf "%b\n" "$(ERR_COLOR)\xE2\x9D\x8C $(NO_COLOR)"
 endef
 
-all: start source-make test-make 
+all: start googletest-make source-make test-make 
 	printf "%b%s%b\n" "$(WHITE)" "$(call Line,$(WIDTH),=)" "$(NO_COLOR)"
 	printf "%b\n" "$(WHITE)Compleated Compiling $(NAME)$(NO_COLOR)"
 
 .PHONY : clean
-clean: start-clean source-clean test-clean
-	if [[ -e compile_commands.json ]]; then rm compile_commands.json; fi
+clean: start-clean googletest-clean source-clean test-clean
+	#if [[ -e compile_commands.json ]]; then rm compile_commands.json; fi
 	if [[ -e $(BUILD_DIR)/lib$(NAME).a ]]; then rm $(BUILD_DIR)/lib$(NAME).a; fi
 	printf "%b%s%b\n" "$(CLEAN_COLOR)" "$(call Line,$(WIDTH),=)" "$(NO_COLOR)"
 	printf "%b\n" "$(CLEAN_COLOR)Compleated Cleaning$(NO_COLOR)"
@@ -93,6 +130,29 @@ docs-html:
 .PHONY : docs-latex
 docs-latex:
 	cd docs && $(MAKE) latexpdf
+
+.PHONY : gh-pages
+gh-pages:
+	git checkout gh-pages
+	rm * -r
+	git checkout master $(GH_PAGES_SOURCE)
+	git reset HEAD
+	mv $(GH_PAGES_SOURCE) .
+	make latex
+	make html
+	mv -fv build/html/* ./
+	git add -A
+	git commit -m"Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`" && git push origin gh-pages; git checkout master
+
+.PHONY : source
+source: start source-make
+	printf "%b%s%b\n" "$(WHITE)" "$(call Line,$(WIDTH),=)" "$(NO_COLOR)"
+	printf "%b\n" "$(WHITE)Compleated Compiling $(NAME)$(NO_COLOR)"
+
+.PHONY : test
+test: start test-make
+	printf "%b%s%b\n" "$(WHITE)" "$(call Line,$(WIDTH),=)" "$(NO_COLOR)"
+	printf "%b\n" "$(WHITE)Compleated Compiling $(NAME)$(NO_COLOR)"
 
 .PHONY : install
 ifeq ($(TYPE),lib)
@@ -179,6 +239,26 @@ start-clean:
 	printf "%b\n" "$(CLEAN_COLOR)Cleaning $(NAME)$(NO_COLOR)"
 	printf "%b%s%b\n" "$(CLEAN_COLOR)" "$(call Line,$(WIDTH),=)" "$(NO_COLOR)"
 
+.PHONY : start-gtest
+start-gtest:
+	printf "%b\n" "$(BUILD_COLOR)GOOGLE TEST$(NO_COLOR)"
+
+.PHONY : googletest-make
+googletest-make: start-gtest $(BASE_PATH)/$(BUILD_DIR)/gtest/gtest-all.o $(BASE_PATH)/$(BUILD_DIR)/gtest/gtest_main.o
+	@ar -rc $(BUILD_DIR)/libgtest.a $(BUILD_DIR)/gtest/gtest-all.o
+	@ar -rc $(BUILD_DIR)/libgtest_main.a $(BUILD_DIR)/gtest/gtest_main.o
+
+.PHONY : googletest-clean
+googletest-clean:
+	printf "%b\n" "$(CLEAN_COLOR)GOOGLE TEST$(NO_COLOR)"
+	$(call Print,Cleaning gtest/*.o,$(WIDTH))
+	if [ -d "$(BUILD_DIR)/gtest" ]; then find $(BASE_PATH)/$(BUILD_DIR)/gtest -name "*.o" -type f -delete; fi
+	$(call check)
+	$(call Print,Cleaning lib*.a,$(WIDTH))
+	if [ -e "$(BUILD_DIR)/libgtest.a" ]; then rm $(BUILD_DIR)/libgtest.a; fi
+	if [ -e "$(BUILD_DIR)/libgtest_main.a" ]; then rm $(BUILD_DIR)/libgtest_main.a; fi
+	$(call check)
+
 .PHONY : source-make
 source-make:
 	printf "%b\n" "$(BUILD_COLOR)SOURCE$(NO_COLOR)"
@@ -191,15 +271,31 @@ source-clean:
 
 .PHONY : test-make
 test-make:
-	if [[ -z "$(TEST_DIR)" ]] && [[ -d "$(TEST_DIR)" ]]; then \
-	  printf "%b\n" "$(BUILD_COLOR)TEST$(NO_COLOR)"; \
-	  cd $(TEST_DIR) && $(MAKE); \
-	fi
+	printf "%b\n" "$(BUILD_COLOR)TEST$(NO_COLOR)"
+	cd $(TEST_DIR) && $(MAKE)
 
 .PHONY : test-clean
 test-clean:
-	if [[ -z "$(TEST_DIR)" ]] && [[ -d "$(TEST_DIR)" ]]; then \
-	  printf "%b\n" "$(CLEAN_COLOR)TEST$(NO_COLOR)"; \
-	  cd $(TEST_DIR) && $(MAKE) clean; \
-	fi
+	printf "%b\n" "$(CLEAN_COLOR)TEST$(NO_COLOR)"
+	cd $(TEST_DIR) && $(MAKE) clean
 
+$(BASE_PATH)/$(BUILD_DIR)/gtest/gtest-all.o:
+	$(call Compile,$(COMPILER) -isystem $(GTEST_DIR)/include -I$(GTEST_DIR) -pthread -c $(GTEST_DIR)/src/gtest-all.cc -o $(BUILD_DIR)/gtest/gtest-all.o,Compiling)
+
+$(BASE_PATH)/$(BUILD_DIR)/gtest/gtest_main.o:
+	$(call Compile,$(COMPILER) -isystem $(GTEST_DIR)/include -I$(GTEST_DIR) -pthread -c $(GTEST_DIR)/src/gtest_main.cc -o $(BUILD_DIR)/gtest/gtest_main.o,Compiling)
+
+.PHONY : help
+help:
+	printf "Here is a list of valid make targets\n"
+	printf "====================================\n"
+	printf "all - Compiles all as needed\n"
+	printf "clean - Deletes all exe, and object files\n"
+	printf "new - (clean, all)\n"
+	printf "purge - (uninstall, clean)\n"
+	printf "docs - (docs-html, docs-latex)\n"
+	printf "docs-html - Creates Sphinx html docs\n"
+	printf "docs-latex - Creates Sphinx latex docs\n"
+	printf "gh-pages - Creates and pushes Sphinx html to gh page\n"
+	printf "install - Installs lib/exe\n"
+	printf "uninstall - Uninstalls lib/exe\n"

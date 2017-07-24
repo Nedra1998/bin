@@ -19,9 +19,13 @@ CreateProject ()
 {
   printf "Creating Project $name\n"
   mkdir "$name"
-  cp ~/bin/.project_files/* ./$name/ -r 
+  cp ~/bin/.project_files/. ./$name -r
   subdir=$name"_files"
   SetVars
+  git init
+  mkdir external
+  cd external
+  git submodule add https://github.com/google/googletest
 }
 
 SetVars ()
