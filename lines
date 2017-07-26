@@ -13,6 +13,7 @@ assembler=("s")
 text=("txt")
 xml=("xml")
 json=("json")
+vim={"vim"}
 
 dir=$1
 total_width=0
@@ -51,6 +52,7 @@ Count ()
     AddCount Text $ext $length "${text[@]}"
     AddCount XML $ext $length "${xml[@]}"
     AddCount JSON $ext $length "${json[@]}"
+    AddCount Vim $ext $length "${vim[@]}"
   done
   for i in "${files[@]}"
   do
