@@ -1,0 +1,12 @@
+#!/bin/bash
+
+old=$1
+new=$2
+
+if [ -z "$old" ] || [ -z "$new" ]; then
+  printf "Current branch and new branch name must be defined\n"
+else
+  git branch -m $old $new
+  git push origin :$old
+  git push origin $new
+fi

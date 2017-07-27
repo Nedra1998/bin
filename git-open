@@ -1,0 +1,15 @@
+#!/bin/bash
+
+branch=$1
+remote=${2:-origin}
+url=$(env -i git remote get-url $remote)
+current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+
+if [ -z "$branch" ]; then
+  branch=$current_branch
+fi
+
+url=$url/tree/$branch
+{
+  sensible-browser $url 
+} &> /dev/null
