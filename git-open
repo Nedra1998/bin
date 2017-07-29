@@ -11,5 +11,5 @@ fi
 
 url=$url/tree/$branch
 {
-  sensible-browser $url 
+  sensible-browser $url & 
 } &> /dev/null
