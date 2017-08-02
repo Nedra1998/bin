@@ -262,22 +262,22 @@ googletest-clean:
 .PHONY : source-make
 source-make:
 	printf "%b\n" "$(BUILD_COLOR)SOURCE$(NO_COLOR)"
-	cd $(SOURCE_DIR) && $(MAKE)
+	if [ -d "$(SOURCE_DIR)" ]; then cd $(SOURCE_DIR) && $(MAKE); fi
 
 .PHONY : source-clean
 source-clean:
 	printf "%b\n" "$(CLEAN_COLOR)SOURCE$(NO_COLOR)"
-	cd $(SOURCE_DIR) && $(MAKE) clean
+	if [ -d "$(SOURCE_DIR)" ]; then cd $(SOURCE_DIR) && $(MAKE) clean; fi
 
 .PHONY : test-make
 test-make:
 	printf "%b\n" "$(BUILD_COLOR)TEST$(NO_COLOR)"
-	cd $(TEST_DIR) && $(MAKE)
+	if [ -d "$(TEST_DIR)" ]; then cd $(TEST_DIR) && $(MAKE); fi
 
 .PHONY : test-clean
 test-clean:
 	printf "%b\n" "$(CLEAN_COLOR)TEST$(NO_COLOR)"
-	cd $(TEST_DIR) && $(MAKE) clean
+	if [ -d "$(TEST_DIR)" ]; then cd $(TEST_DIR) && $(MAKE) clean; fi
 
 $(BASE_PATH)/$(BUILD_DIR)/gtest/gtest-all.o:
 	$(call Compile,$(COMPILER) -isystem $(GTEST_DIR)/include -I$(GTEST_DIR) -pthread -c $(GTEST_DIR)/src/gtest-all.cc -o $(BUILD_DIR)/gtest/gtest-all.o,Compiling)
