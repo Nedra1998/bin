@@ -1,0 +1,150 @@
+#!/usr/bin/python3
+"""Display different colors sets for different themes"""
+
+import argparse
+import sys
+
+
+class style:
+    normal = '\033[0m'
+
+    fg = [
+        '\033[30m', '\033[31m', '\033[32m', '\033[33m', '\033[34m', '\033[35m',
+        '\033[36m', '\033[37m'
+    ]
+
+    fg_light = [
+        '\033[90m', '\033[91m', '\033[92m', '\033[93m', '\033[94m', '\033[95m',
+        '\033[96m', '\033[97m'
+    ]
+
+    bg = [
+        '\033[40m', '\033[41m', '\033[42m', '\033[43m', '\033[44m', '\033[45m',
+        '\033[46m', '\033[47m'
+    ]
+
+    bg_light = [
+        '\033[100m', '\033[101m', '\033[102m', '\033[103m', '\033[104m',
+        '\033[105m', '\033[106m', '\033[107m'
+    ]
+
+    __display_version__ = 1.0
+
+
+def print_color(i, fg, bg, escape, light):
+    """Prints the color provided by i"""
+    print(" ", end='')
+    if fg is True and light is False:
+        print(style.fg[i] + "AaBbCc" + style.normal, end='')
+    if fg is True and light is True:
+        print(style.fg_light[i] + "AaBbCc" + style.normal, end='')
+
+    if fg is True:
+        print("  ", end='')
+
+    if bg is True and light is False:
+        print(style.bg[i] + "      " + style.normal, end='')
+    elif bg is True and light is True:
+        print(style.bg_light[i] + "      " + style.normal, end='')
+
+    if bg is True:
+        print("  ", end='')
+
+    if fg is True or bg is True:
+        print("\u2192  ", end='')
+
+    if light is False:
+        print("Color %.2i" % (i + 1), end='')
+    elif light is True:
+        print("Color %.2i" % (i + 9), end='')
+
+    print("  ", end='')
+
+    if escape is True and light is False:
+        if fg is True:
+            print("%.2im" % (i + 30), end='')
+            print("  ", end='')
+        if bg is True:
+            print("%.3im" % (i + 40), end='')
+    elif escape is True and light is True:
+        if fg is True:
+            print("%.2im" % (i + 90), end='')
+            print("  ", end='')
+        if bg is True:
+            print("%.3im" % (i + 100), end='')
+    print()
+
+
+def print_block(i, light):
+    if light is False:
+        print(style.bg[i] + "    " + style.normal, end='')
+    elif light is True:
+        print(style.bg_light[i] + "    " + style.normal, end='')
+
+
+def display_block(args):
+    print()
+    for i in range(0, 8):
+        print_block(i, False)
+    print()
+    for i in range(0, 8):
+        print_block(i, True)
+    print("\n")
+
+
+def display_colors(args):
+    """Displays colors sets defined in arguments"""
+    if args['fg'] is True or args['bg'] is True or args['escape'] is True:
+        print()
+        for i in range(0, 8):
+            print_color(i, args['fg'], args['bg'], args['escape'], False)
+        print()
+        for i in range(0, 8):
+            print_color(i, args['fg'], args['bg'], args['escape'], True)
+    if args['block'] is True:
+        display_block(args)
+    else:
+        print()
+
+
+def main():
+    """Loads arguments and default values"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--fg',
+        dest='fg',
+        action='store_true',
+        default=False,
+        help='Shows foreground color examples')
+    parser.add_argument(
+        '--bg',
+        dest='bg',
+        action='store_true',
+        default=False,
+        help='Shows background color examples')
+    parser.add_argument(
+        '--escape',
+        dest='escape',
+        action='store_true',
+        default=False,
+        help='Shows escape codes for colors')
+    parser.add_argument(
+        '--block',
+        dest='block',
+        action='store_true',
+        default=False,
+        help='Displays color is block format')
+    try:
+        args = parser.parse_args(sys.argv[1:])
+    except SystemExit as err:
+        return err.code
+    args = vars(args)
+    if args['fg'] is False and args['bg'] is False and args['block'] is False:
+        args['fg'] = True
+        args['bg'] = True
+        args['block'] = True
+    display_colors(args)
+
+
+if __name__ == "__main__":
+    main()
