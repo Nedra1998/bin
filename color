@@ -54,9 +54,9 @@ def print_color(i, fg, bg, escape, light):
         print("\u2192  ", end='')
 
     if light is False:
-        print("Color %.2i" % (i + 1), end='')
+        print("Color %.2i" % (i), end='')
     elif light is True:
-        print("Color %.2i" % (i + 9), end='')
+        print("Color %.2i" % (i + 8), end='')
 
     print("  ", end='')
 

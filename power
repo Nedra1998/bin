@@ -1,51 +1,178 @@
-#!/bin/bash
+#!/usr/bin/python3
+"""Dispays power percentage, and time remaing to terminal"""
 
-SetColor(){
-  printf "\e[38;5;$1""m"
-}
+import argparse
+import sys
+import os
+from time import sleep
+from select import select
+import psutil
 
-Percent(){
-  battery_percent=`acpi -b | grep -P -o '[0-9]+(?=%)'`
-  if [ $battery_percent -ge 60 ]; then
-    color='2'
-  elif [ $battery_percent -ge 40 ]; then
-    color='3'
-  elif [ $battery_percent -le 40 ]; then
-    color='1'
-  fi
-  SetColor $color
-  printf "$battery_percent%% "
-}
 
-Charge(){
-  charge=`acpi -b | cut -d " " -f 3`
-  if [ "$charge" == "Discharging," ]; then
-    color='1'
-    char='\u25BC'
-  elif [ "$charge" == "Charging," ]; then
-    color='2'
-    char='\u25B2'
-  fi
-  SetColor $color
-  printf "$char "
-}
+def kbhit():
+    dr, dw, de = select([sys.stdin], [], [], 0)
+    return dr != []
 
-Time(){
-  time=`acpi -b | cut -d " " -f 5`
-  percent=`acpi -b | grep -P -o '[0-9]+(?=%)'`
-  if [ $battery_percent -ge 60 ]; then
-    color='2'
-  elif [ $battery_percent -ge 40 ]; then
-    color='3'
-  elif [ $battery_percent -le 40 ]; then
-    color='1'
-  fi
-  printf "\e[0m("
-  SetColor $color
-  printf "$time"
-  printf "\e[0m)\n"
-}
 
-Charge
-Percent
-Time
+def get_data():
+    """Gets battery data"""
+    battery = psutil.sensors_battery()
+    percent = battery.percent
+    minute, sec = divmod(battery.secsleft, 60)
+    hour, minute = divmod(minute, 60)
+    return percent, hour, minute, sec
+
+
+#  print("charge = %s%%, time left = %s" % (battery.percent, battery.secsleft))
+
+
+def set_color(red, green, blue, back):
+    """Sets console color according to rgb values"""
+    color = 16 + (36 * red) + (6 * green) + blue
+    if back is False:
+        print("\033[38;5;%im" % color, end='')
+    else:
+        print("\033[48;5;%im" % color, end='')
+
+
+def set_perc_color(perc, back):
+    """Sets color based from percentage"""
+    if perc < 9.09:
+        set_color(5, 0, 0, back)
+    elif perc < 18.18:
+        set_color(5, 1, 0, back)
+    elif perc < 27.27:
+        set_color(5, 2, 0, back)
+    elif perc < 36.36:
+        set_color(5, 3, 0, back)
+    elif perc < 45.45:
+        set_color(5, 4, 0, back)
+    elif perc < 54.54:
+        set_color(5, 5, 0, back)
+    elif perc < 63.63:
+        set_color(4, 5, 0, back)
+    elif perc < 72.72:
+        set_color(3, 5, 0, back)
+    elif perc < 81.81:
+        set_color(2, 5, 0, back)
+    elif perc < 90.90:
+        set_color(1, 5, 0, back)
+    elif perc < 100:
+        set_color(0, 5, 0, back)
+
+
+def draw_bar(size=40):
+    """Draws power remaing as a bar graph"""
+    perc, hour, minute, sec = get_data()
+    print("\n  ", end='')
+    charge = False
+    if hour < 0:
+        hour *= -1
+        charge = True
+    if charge is True:
+        print("\033[0;32m\u23e9\033[0m", end='')
+    else:
+        print("\033[0;31m\u23ea\033[0m", end='')
+    print("[", end='')
+    string = "%.2f%%  %.2i:%.2i:%.2i" % (perc, hour, minute, sec)
+    set_color(0, 0, 0, False)
+    for i in range(0, size):
+        bar_perc = 100 * (i / size)
+        if bar_perc < perc:
+            set_perc_color(bar_perc, True)
+        if i < len(string):
+            if bar_perc >= perc:
+                set_color(5, 5, 5, False)
+            print(string[i], end='')
+        else:
+            print(" ", end='')
+        print("\033[49m", end='')
+    print("\033[0m", end='')
+    print("]", end='')
+    if charge is True:
+        print("\033[0;32m\u23e9\033[0m", end='')
+    else:
+        print("\033[0;31m\u23ea\033[0m", end='')
+    print("\n")
+
+
+def draw_data():
+    """Draws power remaing as just text"""
+    perc, hour, minute, sec = get_data()
+    print()
+    charge = False
+    if hour < 0:
+        hour *= -1
+        charge = True
+    if charge is True:
+        print("  \033[0;32m\u23eb\033[0m", end='')
+    else:
+        print("  \033[0;31m\u23ec\033[0m", end='')
+    set_perc_color(perc, False)
+    print(" %.2f%%  %.2i:%.2i:%.2i" % (perc, hour, minute, sec), end='')
+    if charge is True:
+        print("  \033[0;32m\u23eb\033[0m", end='')
+    else:
+        print("  \033[0;31m\u23ec\033[0m", end='')
+    print("\033[0m\n")
+
+
+def monitor(args):
+    """Activaly monitors battery percentage"""
+    print("\033[2J")
+    while True:
+        print("\033[1;1H", end='')
+        if args['bar'] is True:
+            draw_bar(int(args['size']))
+        else:
+            draw_data()
+        sleep(0.25)
+        if kbhit():
+            raise KeyboardInterrupt("Quit")
+
+
+def main():
+    """Loads options and runs display functions"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--bar',
+        dest='bar',
+        action='store_true',
+        default=False,
+        help='Displays perecentage in a bar graph')
+    parser.add_argument(
+        '--monitor',
+        dest='monitor',
+        action='store_true',
+        default=False,
+        help='Automatically updates power untill user quits')
+    parser.add_argument(
+        '--size', dest='size', default=40, help='Sets size for bar graph')
+    parser.add_argument(
+        '--full',
+        dest='full',
+        action='store_true',
+        default=False,
+        help='Sets size to fill terminal')
+    try:
+        args = parser.parse_args(sys.argv[1:])
+    except SystemExit as err:
+        return err.code
+    args = vars(args)
+    if args['full'] is True:
+        rows, cols = os.popen('stty size', 'r').read().split()
+        args['size'] = int(cols) - 10
+    if args['bar'] is True and args['monitor'] is False:
+        draw_bar(int(args['size']))
+    elif args['bar'] is False and args['monitor'] is False:
+        draw_data()
+    elif args['monitor'] is True:
+        try:
+            monitor(args)
+        except (KeyboardInterrupt, EOFError):
+            print("\033[31;1;4m[Quiting]\033[0m")
+            return 130
+
+
+if __name__ == "__main__":
+    main()
