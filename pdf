@@ -1,7 +1,48 @@
-#!/bin/bash
+#!/usr/bin/python3
 
-if hash zathura 2>/dev/null; then
-  zathura $1 &
-else
-  evince $1 &
-fi
+import os
+import sys
+import glob
+import subprocess
+
+def which(program):
+    """Function that finds if program exists"""
+    def is_exe(fpath):
+        """Function to check if path is an executable"""
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
+
+def pdf_open(file):
+    print(file)
+    if which("zathura") != None:
+        subprocess.run("zathura " +  file + " &", shell=True)
+    else:
+        subprocess.run("evince " + file + " &", shell=True)
+
+def main():
+    if len(sys.argv) != 1:
+        file_name, file_ext = os.path.splitext(sys.argv[1])
+        if file_ext in [".", ".pdf", ".dvi"]:
+            if file_ext == ".":
+                file_ext = ".pdf"
+            pdf_open(file_name + file_ext)
+        else:
+            print("Invalid file extension: " + file_ext)
+    else:
+        files = glob.glob("*.pdf")
+        for file in files:
+            pdf_open(file)
+
+if __name__ == "__main__":
+    main()

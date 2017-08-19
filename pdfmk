@@ -26,7 +26,9 @@ def get_file():
 
 
 def which(program):
+    """Function that finds if program exists"""
     def is_exe(fpath):
+        """Function to check if path is an executable"""
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
     fpath, fname = os.path.split(program)
@@ -49,7 +51,7 @@ def latexmk(files, args):
         elif args['clean_all'] is True:
             subprocess.run(["latexmk", "-C"])
         else:
-            subprocess.run(["latexmk"])
+            subprocess.run(["latexmk", "-pdf"])
     elif which("pdflatex") != None:
         print("PDFLatex")
 
