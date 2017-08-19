@@ -1,0 +1,112 @@
+#!/usr/bin/python3
+"""Module detects primary file type, and runs appropriate commands to
+   produce pdf from that file type"""
+
+import glob
+import argparse
+import sys
+import subprocess
+import os
+
+
+def get_file():
+    """Gets file type, and files"""
+    tex = glob.glob("*.tex")
+    markdown = glob.glob("*.md")
+    restructured_text = glob.glob("*.rst")
+    len_tex = len(tex)
+    len_md = len(markdown)
+    len_rst = len(restructured_text)
+    if max(len_tex, len_rst, len_md) == len_tex:
+        return tex, "latex"
+    elif max(len_tex, len_rst, len_md) == len_rst:
+        return restructured_text, "rst"
+    elif max(len_tex, len_rst, len_md) == len_md:
+        return markdown, "md"
+
+
+def which(program):
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
+
+
+def latexmk(files, args):
+    if which("latexmk") != None:
+        if args['clean'] is True:
+            subprocess.run(["latexmk", "-c"])
+        elif args['clean_all'] is True:
+            subprocess.run(["latexmk", "-C"])
+        else:
+            subprocess.run(["latexmk"])
+    elif which("pdflatex") != None:
+        print("PDFLatex")
+
+
+def rstmk(files, args):
+    if which("rst2pdf") != None:
+        if args['clean_all'] is True:
+            files = glob.glob("*.pdf")
+            for file in files:
+                os.remove(file)
+        else:
+            for file in files:
+                subprocess.run(["rst2pdf", file])
+
+
+def mdmk(files, args):
+    if which("pandoc") != None:
+        if args['clean_all'] is True:
+            files = glob.glob("*.pdf")
+            for file in files:
+                os.remove(file)
+        else:
+            for file in files:
+                subprocess.run(["pandoc", file, "-o", os.path.splitext(file)[0] + ".pdf"])
+
+
+def main():
+    """Main function"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-c',
+        '--clean',
+        dest='clean',
+        action='store_true',
+        default=False,
+        help='Cleans non essential files excluding *.pdf')
+    parser.add_argument(
+        '-C',
+        '--CLEAN',
+        dest='clean_all',
+        action='store_true',
+        default=False,
+        help='Cleans non essential files including *.pdf')
+    try:
+        args = parser.parse_args(sys.argv[1:])
+    except SystemExit as err:
+        return err.code
+    args = vars(args)
+
+    file, file_type = get_file()
+    if file_type == "latex":
+        latexmk(file, args)
+    elif file_type == "rst":
+        rstmk(file, args)
+    elif file_type == "md":
+        mdmk(file, args)
+
+
+if __name__ == "__main__":
+    main()
