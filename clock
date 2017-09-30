@@ -1,0 +1,156 @@
+#!/usr/bin/python3
+
+from subprocess import call
+import time
+import datetime
+import os
+from random import randint
+
+def print_int(val, out):
+    string = str(val)
+    if len(string) == 1:
+        string = '0' + string
+    for c in string:
+        if c == '0':
+            out[0] += 'XXXXX '
+            out[1] += 'X   X '
+            out[2] += 'X   X '
+            out[3] += 'X   X '
+            out[4] += 'XXXXX '
+        elif c == '1':
+            out[0] += '  X   '
+            out[1] += ' XX   '
+            out[2] += '  X   '
+            out[3] += '  X   '
+            out[4] += ' XXX  '
+        elif c == '2':
+            out[0] += 'XXXXX '
+            out[1] += '    X '
+            out[2] += 'XXXXX '
+            out[3] += 'X     '
+            out[4] += 'XXXXX '
+        elif c == '3':
+            out[0] += 'XXXXX '
+            out[1] += '    X '
+            out[2] += 'XXXXX '
+            out[3] += '    X '
+            out[4] += 'XXXXX '
+        elif c == '4':
+            out[0] += 'X   X '
+            out[1] += 'X   X '
+            out[2] += 'XXXXX '
+            out[3] += '    X '
+            out[4] += '    X '
+        elif c == '5':
+            out[0] += 'XXXXX '
+            out[1] += 'X     '
+            out[2] += 'XXXXX '
+            out[3] += '    X '
+            out[4] += 'XXXXX '
+        elif c == '6':
+            out[0] += 'XXXXX '
+            out[1] += 'X     '
+            out[2] += 'XXXXX '
+            out[3] += 'X   X '
+            out[4] += 'XXXXX '
+        elif c == '7':
+            out[0] += 'XXXXX '
+            out[1] += '    X '
+            out[2] += '    X '
+            out[3] += '    X '
+            out[4] += '    X '
+        elif c == '8':
+            out[0] += 'XXXXX '
+            out[1] += 'X   X '
+            out[2] += 'XXXXX '
+            out[3] += 'X   X '
+            out[4] += 'XXXXX '
+        elif c == '9':
+            out[0] += 'XXXXX '
+            out[1] += 'X   X '
+            out[2] += 'XXXXX '
+            out[3] += '    X '
+            out[4] += '    X '
+    return out
+
+def print_col(out):
+    out[0] += '  '
+    out[1] += 'X '
+    out[2] += '  '
+    out[3] += 'X '
+    out[4] += '  '
+    return out
+
+def print_am(am, out):
+    if am is True:
+        out[0] += '  XXXXX X    X'
+        out[1] += '  X   X XX  XX'
+        out[2] += '  XXXXX X XX X'
+        out[3] += '  X   X X    X'
+        out[4] += '  X   X X    X'
+    elif am is False:
+        out[0] += '  XXXXX X    X'
+        out[1] += '  X   X XX  XX'
+        out[2] += '  XXXXX X XX X'
+        out[3] += '  X     X    X'
+        out[4] += '  X     X    X'
+    return out
+
+def print_str(out):
+    import os
+    rows, columns = os.popen('stty size', 'r').read().split()
+    rows = int(rows)
+    columns = int(columns)
+    rows = (rows / 2) - 2
+    columns = (columns / 2) - 26
+    rows = round(rows)
+    columns = round(columns)
+    for l in out:
+        print("\033[{};{}H".format(rows,columns), end='')
+        for c in l:
+            if c == 'X':
+                print("\u2588", end='')
+            else:
+                print(" ", end='')
+        rows = rows + 1
+    print()
+
+def center(y = False):
+    rows, columns = os.popen('stty size', 'r').read().split()
+    rows = int(rows)
+    columns = int(columns)
+    rows = (rows / 2) - 2
+    columns = (columns / 2) - 26
+    rows = round(rows)
+    columns = round(columns)
+    print("\033[{};{}H".format(rows,columns), end='')
+
+
+def print_time():
+    now = datetime.datetime.now()
+    hour = now.hour
+    min = now.minute
+    sec = now.second
+    am = True
+    if hour > 12:
+        hour = hour - 12
+        am = False
+    output = ["", "", "", "", ""]
+    output = print_int(hour, output)
+    output = print_col(output)
+    output = print_int(min, output)
+    output = print_col(output)
+    output = print_int(sec, output)
+    output = print_am(am, output)
+    print_str(output)
+
+def main():
+    color = randint(31,36)
+    print("\033[{}m".format(color))
+    while True:
+        call(["clear"])
+        print_time();
+        time.sleep(1)
+
+if __name__ == "__main__":
+  main()

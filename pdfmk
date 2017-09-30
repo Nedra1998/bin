@@ -48,8 +48,18 @@ def latexmk(files, args):
     if which("latexmk") != None:
         if args['clean'] is True:
             subprocess.run(["latexmk", "-c"])
+            ext = ("*.aux", "*.fls", "*.maf", "*.mtc*", "*.stc*")
+            for types in ext:
+                files = glob.glob(types)
+                for f in files:
+                    os.remove(f)
         elif args['clean_all'] is True:
             subprocess.run(["latexmk", "-C"])
+            ext = ("*.aux", "*.fls", "*.maf", "*.mtc*", "*.stc*")
+            for types in ext:
+                files = glob.glob(types)
+                for f in files:
+                    os.remove(f)
         else:
             subprocess.run(["latexmk", "-pdf"])
     elif which("pdflatex") != None:

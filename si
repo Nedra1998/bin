@@ -1,0 +1,58 @@
+#!/bin/bash
+
+prefix(){
+  echo -e " Factor | Name  | Symbol "
+  echo -e "--------+-------+--------"
+  echo -e " 10\u00b2\u2074   | yotta | Y "
+  echo -e " 10\u00b2\u00b9   | zetta | Z "
+  echo -e " 10\u00b9\u2078   | exa   | E "
+  echo -e " 10\u00b9\u2075   | peta  | P "
+  echo -e " 10\u00b9\u00b2   | tera  | T "
+  echo -e " 10\u2079    | giga  | G "
+  echo -e " 10\u2076    | mega  | M "
+  echo -e " 10\u00b3    | kilo  | k "
+  echo -e " 10\u00b2    | hecto | h "
+  echo -e " 10\u00b9    | deka  | da "
+  echo -e " 10\u207B\u00b9   | deci  | d "
+  echo -e " 10\u207B\u00b2   | centi | c "
+  echo -e " 10\u207B\u00b3   | milli | m "
+  echo -e " 10\u207B\u2076   | micro | \u03BC "
+  echo -e " 10\u207B\u2079   | nano  | n "
+  echo -e " 10\u207B\u00b9\u00b2  | pico  | o "
+  echo -e " 10\u207B\u00b9\u2075  | femto | f "
+  echo -e " 10\u207B\u00b9\u2078  | atto  | a "
+  echo -e " 10\u207B\u00b2\u00b9  | zepto | z "
+  echo -e " 10\u207B\u00b2\u2074  | yocto | y "
+}
+
+units(){
+  echo -e " Name     | Quantity                  | Unit | Dimension "
+  echo -e "----------+---------------------------+------+-----------"
+  echo -e " metre    | length                    | m    | L "
+  echo -e " kilogram | mass                      | kg   | M "
+  echo -e " second   | time                      | s    | T "
+  echo -e " ampere   | electric current          | A    | I "
+  echo -e " kelvin   | thermodynamic temperature | K    | \u0398 "
+  echo -e " mol      | amout of substance        | mol  | N "
+  echo -e " candela  | luminous intensity        | cd   | J "
+}
+
+derived(){
+  echo -e " Name | Quantity | Symbol | Representation"
+  echo -e "-+-+-+-"
+  echo -e " radian | angle | rad | "
+  echo -e " steradian | solid angle | sr | "
+  echo -e " hertz | frequency | Hz | "
+  echo -e " newton | force | N | "
+  echo -e " pascal | pressure | Pa | "
+  echo -e " joule | energy | J | "
+  echo -e " watt | power | W | "
+  echo -e " coulomb | electic charge | C | "
+  echo -e " volt | voltage | V | "
+  echo -e " farad | capacitance | F | "
+  echo -e " ohm | electrical resistance | ? | "
+}
+
+prefix
+units
+derived
