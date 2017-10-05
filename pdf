@@ -24,7 +24,6 @@ def which(program):
     return None
 
 def pdf_open(file):
-    print(file)
     if which("zathura") != None:
         subprocess.run("zathura " +  file + " &", shell=True)
     else:
@@ -33,6 +32,7 @@ def pdf_open(file):
 def main():
     if len(sys.argv) != 1:
         file_name, file_ext = os.path.splitext(sys.argv[1])
+        file_name = file_name.translate(str.maketrans({" ":  r"\ "}))
         if file_ext in [".", ".pdf", ".dvi"]:
             if file_ext == ".":
                 file_ext = ".pdf"
@@ -42,6 +42,7 @@ def main():
     else:
         files = glob.glob("*.pdf")
         for file in files:
+            file = file.translate(str.maketrans({" ":  r"\ "}))
             pdf_open(file)
 
 if __name__ == "__main__":

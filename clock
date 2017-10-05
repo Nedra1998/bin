@@ -132,9 +132,10 @@ def print_time():
     min = now.minute
     sec = now.second
     am = True
+    if hour >= 12:
+        am = False
     if hour > 12:
         hour = hour - 12
-        am = False
     output = ["", "", "", "", ""]
     output = print_int(hour, output)
     output = print_col(output)
