@@ -7,13 +7,16 @@ python=("py")
 latex=("tex" "aux")
 rst=("rst")
 md=("md" "markdown")
-java=("java" "dpj" "js" "jsp")
-perl=("pl", "pm")
+java=("java" "dpj")
+perl=("pl" "pm")
 assembler=("s")
 text=("txt")
 xml=("xml")
 json=("json")
-vim={"vim"}
+vim=("vim")
+html=("html" "html5")
+css=("css" "sass")
+javascript=("js")
 
 dir=$1
 total_width=0
@@ -53,6 +56,9 @@ Count ()
     AddCount XML $ext $length "${xml[@]}"
     AddCount JSON $ext $length "${json[@]}"
     AddCount Vim $ext $length "${vim[@]}"
+    AddCount HTML $ext $length "${html[@]}"
+    AddCount CSS $ext $length "${css[@]}"
+    AddCount JavaScript $ext $length "${javascrip[@]}"
   done
   for i in "${files[@]}"
   do
