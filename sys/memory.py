@@ -12,20 +12,20 @@ def get_data():
 
 def get_size(byte, sufix):
     if sufix == 'KB':
-        return "{:.2f}".format(byte / 1024.0)
+        return "{:.2f}".format(byte / 1e3)
     elif sufix == 'MB':
-        return "{:.2f}".format(byte / 1048576.0)
+        return "{:.2f}".format(byte / 1e6)
     elif sufix == 'GB':
-        return "{:.2f}".format(byte / 1.073742e9)
+        return "{:.2f}".format(byte / 1e9)
     elif sufix == 'TB':
-        return "{:.2f}".format(byte / 1.09951e12)
+        return "{:.2f}".format(byte / 1e12)
 
 
 def main():
     percent, total, used = get_data()
     util.fmt_print({
         "{percent}": util.fmt_percent(percent),
-        "{bar}": util.get_bar(percent),
+        "{bar}": util.get_bar(percent, True),
         "{totalKB}": get_size(total, 'KB'),
         "{usedKB}": get_size(used, 'KB'),
         "{totalMB}": get_size(total, 'MB'),

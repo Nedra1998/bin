@@ -4,8 +4,9 @@ import psutil
 import util
 import sys
 
-
 def get_data():
+    if not hasattr(psutil, "sensors_battery"):
+        return sys.exit("platform not supported")
     battery = psutil.sensors_battery()
     precent = battery.percent
     minute, sec = divmod(battery.secsleft, 60)
@@ -16,7 +17,8 @@ def get_data():
         minute *= -1
         sec *= -1
         charging = True
-    return precent, charging, [hour, minute, sec]
+    time = [hour, minute, sec]
+    return precent, charging, time
 
 
 def get_icon(percent, charging):
@@ -42,14 +44,13 @@ def main():
         else:
             print("Discharging", end='')
         return
-    util.fmt_print({
-        "{bar}": util.get_bar(percent),
-        "{icon}": get_icon(percent, charging),
-        "{percent}": util.fmt_percent(percent),
-        "{H}": "{:02}".format(time[0]),
-        "{M}": "{:02}".format(time[1]),
-        "{S}": "{:02}".format(time[2])
-    }, sys.argv[1])
+    data = {"{percent}": util.fmt_percent(percent),
+            "{bar}": util.get_bar(percent),
+            "{icon}": get_icon(percent, charging),
+            "{H}": "{:02}".format(time[0]),
+            "{M}": "{:02}".format(time[1]),
+            "{S}": "{:02}".format(time[2])}
+    util.fmt_print(data, sys.argv[1])
 
 
 if __name__ == "__main__":

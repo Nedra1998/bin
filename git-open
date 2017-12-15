@@ -6,10 +6,10 @@ url=$(env -i git remote get-url $remote)
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 
 if [ -z "$branch" ]; then
-  branch=$current_branch
+    branch=$current_branch
 fi
 
 url=$url/tree/$branch
 {
-  sensible-browser $url & 
+    sensible-browser $url &
 } &> /dev/null
