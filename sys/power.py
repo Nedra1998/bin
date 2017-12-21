@@ -44,12 +44,12 @@ def main():
         else:
             print("Discharging", end='')
         return
-    data = {"{percent}": util.fmt_percent(percent),
-            "{bar}": util.get_bar(percent),
-            "{icon}": get_icon(percent, charging),
-            "{H}": "{:02}".format(time[0]),
-            "{M}": "{:02}".format(time[1]),
-            "{S}": "{:02}".format(time[2])}
+    data = {"percent": util.fmt_percent(percent),
+            "bar": util.get_bar(percent),
+            "icon": get_icon(percent, charging),
+            "H": "{:02}".format(time[0]),
+            "M": "{:02}".format(time[1]),
+            "S": "{:02}".format(time[2])}
     util.fmt_print(data, sys.argv[1])
 
 

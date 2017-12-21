@@ -39,13 +39,21 @@ def get_bar(percent, minmum=False):
         else:
             return '\u2588'
 
+def gen_color_code(string):
+    string = string.strip('{')
+    string = string.strip('}')
+    string = string.strip('#')
+    rgb_color = tuple(int(string[i:i+2], 16) for i in (0,2,4))
+    return "\033[38;2;{};{};{}m".format(rgb_color[0], rgb_color[1], rgb_color[2])
+
 
 def fmt_print(data, fmt, end=''):
-    for key, value in data.items():
-        if type(value) is not str:
-            data[key] = str(value)
-    regex = re.compile("(" + '|'.join(data.keys()) + ")")
-    fmt = regex.sub(lambda x: data[x.group()], fmt)
+    colors = re.findall("{#.{6}}", fmt)
+    for i, match in enumerate(colors):
+        fmt = fmt.replace(match, ">>{}<<".format(i))
+    fmt = fmt.format( **data )
+    for i, match in enumerate(colors):
+        fmt = fmt.replace(">>{}<<".format(i), '%{F' + match.lstrip('{'))
     print(fmt, end=end)
 
 

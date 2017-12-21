@@ -24,16 +24,16 @@ def get_size(byte, sufix):
 def main():
     percent, total, used = get_data()
     util.fmt_print({
-        "{percent}": util.fmt_percent(percent),
-        "{bar}": util.get_bar(percent, True),
-        "{totalKB}": get_size(total, 'KB'),
-        "{usedKB}": get_size(used, 'KB'),
-        "{totalMB}": get_size(total, 'MB'),
-        "{usedMB}": get_size(used, 'MB'),
-        "{totalGB}": get_size(total, 'GB'),
-        "{usedGB}": get_size(used, 'GB'),
-        "{totalTB}": get_size(total, 'TB'),
-        "{usedTB}": get_size(used, 'TB')
+        "percent": util.fmt_percent(percent),
+        "bar": util.get_bar(percent, True),
+        "totalKB": get_size(total, 'KB'),
+        "usedKB": get_size(used, 'KB'),
+        "totalMB": get_size(total, 'MB'),
+        "usedMB": get_size(used, 'MB'),
+        "totalGB": get_size(total, 'GB'),
+        "usedGB": get_size(used, 'GB'),
+        "totalTB": get_size(total, 'TB'),
+        "usedTB": get_size(used, 'TB')
     }, sys.argv[1])
 
 

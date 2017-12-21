@@ -35,23 +35,23 @@ def get_size(byte, sufix):
 def main():
     total, used, available, percentage = get_data()
     data = dict()
-    data['{icon}'] = '\ue706'
-    data['{percent}'] = percentage
-    data['{totalKB}'] = get_size(total, 'KB')
-    data['{totalMB}'] = get_size(total, 'MB')
-    data['{totalGB}'] = get_size(total, 'GB')
-    data['{totalTB}'] = get_size(total, 'TB')
-    data['{totalAuto}'], data['{totalSufix}'] = get_size(total, "Auto")
-    data['{usedKB}'] = get_size(used, 'KB')
-    data['{usedMB}'] = get_size(used, 'MB')
-    data['{usedGB}'] = get_size(used, 'GB')
-    data['{usedTB}'] = get_size(used, 'TB')
-    data['{usedAuto}'], data['{usedSufix}'] = get_size(used, "Auto")
-    data['{availableKB}'] = get_size(available, 'KB')
-    data['{availableMB}'] = get_size(available, 'MB')
-    data['{availableGB}'] = get_size(available, 'GB')
-    data['{availableTB}'] = get_size(available, 'TB')
-    data['{availableAuto}'], data['{availableSufix}'] = get_size(
+    data['icon'] = '\ue706'
+    data['percent'] = percentage
+    data['totalKB'] = get_size(total, 'KB')
+    data['totalMB'] = get_size(total, 'MB')
+    data['totalGB'] = get_size(total, 'GB')
+    data['totalTB'] = get_size(total, 'TB')
+    data['totalAuto'], data['totalSufix'] = get_size(total, "Auto")
+    data['usedKB'] = get_size(used, 'KB')
+    data['usedMB'] = get_size(used, 'MB')
+    data['usedGB'] = get_size(used, 'GB')
+    data['usedTB'] = get_size(used, 'TB')
+    data['usedAuto'], data['usedSufix'] = get_size(used, "Auto")
+    data['availableKB'] = get_size(available, 'KB')
+    data['availableMB'] = get_size(available, 'MB')
+    data['availableGB'] = get_size(available, 'GB')
+    data['availableTB'] = get_size(available, 'TB')
+    data['availableAuto'], data['availableSufix'] = get_size(
         available, "Auto")
     util.fmt_print(data, sys.argv[1])
 

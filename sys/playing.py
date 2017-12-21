@@ -5,15 +5,31 @@ import util
 import subprocess
 import json
 from pprint import pprint
+from csv import reader
 
 
 def get_dict():
     metadata = subprocess.run(
             ["playerctl", "metadata"],
             stdout=subprocess.PIPE).stdout.decode('utf-8')
+    import ast
     metadata = metadata.strip('{')
     metadata = metadata.strip('}')
-    metadata = metadata.split(', ')
+    in_quote = False
+    meta_list = list()
+    string = str()
+    for char in metadata:
+        if char == '\"' or char == '\'':
+            if in_quote is False:
+                in_quote = True
+            else:
+                in_quote = False
+        if char == ',' and in_quote is False:
+            meta_list.append(string)
+            string = str()
+        else:
+            string += char
+    metadata = meta_list
     data = dict()
     for item in metadata:
         item = item.split(': ')
@@ -45,7 +61,7 @@ def get_dict():
             except ValueError:
                 pass
 
-        data['{' + item[0].lower() + '}'] = item[1]
+        data[item[0].lower()] = item[1]
     return data
 #  print(metadata)
 
@@ -77,11 +93,11 @@ def main():
     data = dict()
     if status != -1:
         data = get_dict()
-    data['{status}'] = str(status)
-    data['{play_pause}'] = get_play_pause(status)
-    data['{next}'] = '\uf051'
-    data['{prev}'] = '\uf048'
-    data['{icon}'] = '\uf001'
+    data['status'] = str(status)
+    data['play_pause'] = get_play_pause(status)
+    data['next'] = '\uf051'
+    data['prev'] = '\uf048'
+    data['icon'] = '\uf001'
     if len(sys.argv) == 2:
         util.fmt_print(data, sys.argv[1])
     if status is True and len(sys.argv) >= 3:
