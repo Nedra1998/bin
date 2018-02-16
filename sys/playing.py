@@ -9,61 +9,68 @@ from csv import reader
 
 
 def get_dict():
+    data = dict()
     metadata = subprocess.run(
             ["playerctl", "metadata"],
             stdout=subprocess.PIPE).stdout.decode('utf-8')
-    import ast
-    metadata = metadata.strip('{')
-    metadata = metadata.strip('}')
-    in_quote = False
-    meta_list = list()
-    string = str()
-    for char in metadata:
-        if char == '\"' or char == '\'':
-            if in_quote is False:
-                in_quote = True
-            else:
-                in_quote = False
-        if char == ',' and in_quote is False:
-            meta_list.append(string)
-            string = str()
-        else:
-            string += char
-    metadata = meta_list
-    data = dict()
-    for item in metadata:
-        item = item.split(': ')
-        item[1] = item[1].strip('<')
-        item[1] = item[1].strip('>')
-        item[0] = item[0].strip('\"')
-        item[0] = item[0].strip('\'')
-        item[0] = item[0].split(':')[1]
-        item[1] = item[1].strip('\"')
-        item[1] = item[1].strip('\'')
-        if item[1].startswith("uint64 "):
-            item[1] = item[1][7:]
-        if item[1][0] == '[' and item[1][-1] == ']':
-            item[1] = item[1][1:-1]
-            item[1] = item[1].split(', ')
-            for i, it in enumerate(item[1]):
-                item[1][i] = it.strip('\"')
-                item[1][i] = it.strip('\'')
-            item[1] = ", ".join(item[1])
-
-        if type(item[1]) is str:
-            try:
-                item[1] = "{:d}".format(int(item[1]))
-            except ValueError:
-                pass
-        if type(item[1]) is str:
-            try:
-                item[1] = "{:.2f}".format(float(item[1]))
-            except ValueError:
-                pass
-
-        data[item[0].lower()] = item[1]
+    data['metadata'] = metadata
+    metadata = metadata[1:-1]
+    state = 0
+    prev = str()
+    current = str()
+    item = []
+    for ch in metadata:
+        if (state == 0 and (ch == "\'" or ch == "\"")):
+            if state == 0 and ch == "\'":
+                state = 1
+            if state == 0 and ch == "\"":
+                state = 2
+            current = str()
+        elif (state == 0 and ch == '<'):
+            state = 3
+        elif (state == 3 and ch == '>'):
+            if item[1] == str() and current != str():
+                item[1] = current
+            data[item[0]] = item[1]
+            state = 0
+        elif (state == 1 and ch == "\'") or (state == 2 and ch == "\""):
+            state = 0
+            if len(current.split(':')) > 1:
+                current = current.split(':')[-1]
+            item = [current, str()]
+            current = str()
+        elif state == 3 and ch == "\'":
+            state = 4
+        elif state == 4 and ch == "\'":
+            state = 3
+            item[1] = current
+            current = str()
+        elif state == 3 and ch == "\"":
+            state = 5
+        elif state == 5 and ch == "\"":
+            state = 3
+            item[1] = current
+            current = str()
+        elif state == 3 and ch == "[":
+            state = 6
+            item[1] = list()
+        elif state == 6 and ch == "]":
+            state = 3
+        elif state == 6 and ch == "\'":
+            state = 7
+        elif state == 7 and ch == "\'":
+            state = 6
+            item[1].append(current)
+            current = str()
+        elif state == 6 and ch == "\"":
+            state = 8
+        elif state == 8 and ch == "\"":
+            state = 6
+            item[1].append(current)
+            current = str()
+        elif state != 0:
+            current += ch
     return data
-#  print(metadata)
 
 
 def get_data():
@@ -93,6 +100,7 @@ def main():
     data = dict()
     if status != -1:
         data = get_dict()
+        data['artist'] = ' '.join(data['artist'])
     data['status'] = str(status)
     data['play_pause'] = get_play_pause(status)
     data['next'] = '\uf051'

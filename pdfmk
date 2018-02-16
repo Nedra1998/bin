@@ -61,7 +61,7 @@ def latexmk(files, args):
                 for f in files:
                     os.remove(f)
         else:
-            subprocess.run(["latexmk", "-pdf"])
+            subprocess.run(["latexmk", "-pdf", "-shell-escape"])
     elif which("pdflatex") != None:
         print("PDFLatex")
 
