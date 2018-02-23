@@ -1,4 +1,5 @@
 #!/bin/sh
+# this is a tes
 
 which lcov 1>/dev/null 2>&1
 if [ $? != 0 ]
