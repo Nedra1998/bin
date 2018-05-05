@@ -2,6 +2,7 @@
 
 import psutil
 import util
+import subprocess
 import sys
 
 def get_data():
@@ -43,6 +44,23 @@ def main():
             print("Charging", end='')
         else:
             print("Discharging", end='')
+        return
+    if sys.argv[1] == "--notify":
+        if percent <= 5:
+            title = "\uf071 Battery Critical!"
+            content = "\uf244 " + util.fmt_percent(percent)
+            content += "\n\uf017 {:02}:{:02}:{:02}".format(time[0], time[1], time[2])
+            subprocess.run(["notify-send", "--urgency=critical", title, content])
+        elif percent <= 10:
+            title = "\uf071 Battery Low!"
+            content = "\uf243 " + util.fmt_percent(percent)
+            content += "\n\uf017 {:02}:{:02}:{:02}".format(time[0], time[1], time[2])
+            subprocess.run(["notify-send", "--urgency=critical", title, content])
+        elif percent >= 90 and charging is True:
+            title = "\uf071 Battery Full!"
+            content = "\uf240 " + util.fmt_percent(percent)
+            content += "\n\uf017 {:02}:{:02}:{:02}".format(time[0], time[1], time[2])
+            subprocess.run(["notify-send", title, content])
         return
     data = {"percent": util.fmt_percent(percent),
             "bar": util.get_bar(percent),
