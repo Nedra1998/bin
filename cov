@@ -1,0 +1,34 @@
+#!/bin/sh
+# this is a tes
+
+which lcov 1>/dev/null 2>&1
+if [ $? != 0 ]
+then
+    echo "You need to have lcov installed in order to generate the test coverage report"
+    exit 1
+fi
+
+if [ "$1" = "-c" ]; then
+  echo "Cleaning coverage reports"
+  rm coverage.info
+  rm coverage -r
+  exit 0
+fi
+
+if [ "$1" = "-v" ]; then
+  xdg-open coverage/index.html
+  exit 0
+fi
+
+if [ "$1" = "-i" ]; then
+  lcov -c -i -b . -d . -o coverage.baseline
+fi
+
+lcov -o coverage.info -c -d . -b .
+if [ -e "coverage.baseline" ]; then
+  lcov -a coverage.baseline -a coverage.info -o coverage.info
+fi
+lcov --remove coverage.info '/usr/*' '*/external/*' --output-file coverage.info
+sed -i -e 's/\/test_/\/test\/test_/g' coverage.info
+genhtml -o coverage coverage.info
+rm coverage.info

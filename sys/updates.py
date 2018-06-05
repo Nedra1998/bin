@@ -100,15 +100,14 @@ def main():
     dist = get_distro()
     count, pkg = get_data(dist)
     data = dict()
-    data['{icon}'] = get_distro_icon(dist)
-    data['{dist}'] = dist
+    data['icon'] = get_distro_icon(dist)
     if dist == "Ubuntu":
-        data['{apt}'] = count
-        data['{total}'] = count
+        data['apt'] = count
+        data['total'] = count
     elif dist == "Arch":
-        data['{total}'] = count[0] + count[1]
-        data['{pacman}'] = count[0]
-        data['{aur}'] = count[1]
+        data['total'] = count[0] + count[1]
+        data['pacman'] = count[0]
+        data['aur'] = count[1]
     util.fmt_print(data, sys.argv[1])
 
 
