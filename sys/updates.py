@@ -64,7 +64,7 @@ def pkg_manager(dist):
 
 def get_distro_icon(dist):
     if dist == 'Ubuntu':
-        return '\uf30c'
+        return '\uf31b'
     elif dist == "Arch":
         return '\uf300'
     elif dist == "Debian":
