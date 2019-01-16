@@ -88,9 +88,9 @@ def draw_bar(size=40):
         hour *= -1
         charge = True
     if charge is True:
-        print("\033[0;32m\u23e9\033[0m", end='')
+        print("\033[0;32m\u25b6\033[0m", end='')
     else:
-        print("\033[0;31m\u23ea\033[0m", end='')
+        print("\033[0;31m\u25c0\033[0m", end='')
     print("[", end='')
     string = "%.2f%%  %.2i:%.2i:%.2i" % (perc, hour, minute, sec)
     set_color(0, 0, 0, False)
@@ -108,9 +108,9 @@ def draw_bar(size=40):
     print("\033[0m", end='')
     print("]", end='')
     if charge is True:
-        print("\033[0;32m\u23e9\033[0m", end='')
+        print("\033[0;32m\u25b6\033[0m", end='')
     else:
-        print("\033[0;31m\u23ea\033[0m", end='')
+        print("\033[0;31m\u25c0\033[0m", end='')
     print("\n")
 
 
@@ -123,15 +123,15 @@ def draw_data():
         hour *= -1
         charge = True
     if charge is True:
-        print("  \033[0;32m\u23eb\033[0m", end='')
+        print("  \033[0;32m\u25b2\033[0m", end='')
     else:
-        print("  \033[0;31m\u23ec\033[0m", end='')
+        print("  \033[0;31m\u25bc\033[0m", end='')
     set_perc_color(perc, False)
     print(" %.2f%%  %.2i:%.2i:%.2i" % (perc, hour, minute, sec), end='')
     if charge is True:
-        print("  \033[0;32m\u23eb\033[0m", end='')
+        print("  \033[0;32m\u25b2\033[0m", end='')
     else:
-        print("  \033[0;31m\u23ec\033[0m", end='')
+        print("  \033[0;31m\u25bc\033[0m", end='')
     print("\033[0m\n")
 
 

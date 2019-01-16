@@ -26,6 +26,7 @@ def get_count_deb():
 
 def get_count_arch():
     count = [0, 0]
+    print(count)
     result = subprocess.run(
             ["checkupdates"], stdout=subprocess.PIPE).stdout.decode('utf-8')
     count[0] = result.count("\n")
@@ -45,10 +46,12 @@ def get_data(dist):
         return get_count_deb()
     elif dist == 'Arch':
         return get_count_arch()
+    else:
+        return (0,0)
 
 
 def get_distro():
-    return platform.dist()[0]
+    return platform.dist()[0].title();
 
 
 def pkg_manager(dist):
@@ -64,7 +67,7 @@ def pkg_manager(dist):
 
 def get_distro_icon(dist):
     if dist == 'Ubuntu':
-        return '\uf30c'
+        return '\uf31b'
     elif dist == "Arch":
         return '\uf300'
     elif dist == "Debian":
