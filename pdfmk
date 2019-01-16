@@ -105,13 +105,24 @@ def main():
         action='store_true',
         default=False,
         help='Cleans non essential files including *.pdf')
+    parser.add_argument('file', nargs='?', default=None, help='File to compile')
     try:
         args = parser.parse_args(sys.argv[1:])
     except SystemExit as err:
         return err.code
     args = vars(args)
 
-    file, file_type = get_file()
+    if args['file'] != None:
+        file = [args['file']]
+        ext = file[0].split('.')[-1]
+        if ext == "tex":
+            file_type = "latex"
+        elif ext == "md":
+            file_type = "md"
+        elif ext == "rst":
+            file_type = "rst"
+    else:
+        file, file_type = get_file()
     if file_type == "latex":
         latexmk(file, args)
     elif file_type == "rst":

@@ -10,7 +10,6 @@ fi
 
 if [ "$1" = "-c" ]; then
   echo "Cleaning coverage reports"
-  rm coverage.info
   rm coverage -r
   exit 0
 fi
@@ -24,7 +23,7 @@ if [ "$1" = "-i" ]; then
   lcov -c -i -b . -d . -o coverage.baseline
 fi
 
-lcov -o coverage.info -c -d . -b .
+lcov -o coverage.info -c -d . -b . --gcov-tool llvm-gcov
 if [ -e "coverage.baseline" ]; then
   lcov -a coverage.baseline -a coverage.info -o coverage.info
 fi

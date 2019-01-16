@@ -1,0 +1,3 @@
+#!/bin/bash
+
+~/Applications/m.css/doxygen/dox2html5.py ./Doxyfile-mcss

@@ -1,0 +1,86 @@
+#!/usr/bin/python3
+
+import sys
+from xml.etree import ElementTree
+import argparse
+
+
+def convert_poly(attr):
+    res = "\draw[{}] ".format(attr['stroke']) + '--'.join([
+        '({},{})'.format(
+            float(x.split(',')[0]) / 100.0,
+            float(x.split(',')[1]) / 100.0) for x in attr['points'].split()
+    ]) + '--cycle;'
+    return res
+
+def convert_polyline(attr):
+    res = "\draw[{}] ".format(attr['stroke']) + '--'.join([
+        '({},{})'.format(
+            float(x.split(',')[0]) / 100.0,
+            float(x.split(',')[1]) / 100.0) for x in attr['points'].split()
+    ])
+    return res
+
+
+def convert_rect(attr):
+    if attr['fill'] == 'white':
+        return ''
+    else:
+        return '\draw[{}] ({},{})rectangle ({},{})'.format(
+            attr['stroke'] if 'stroke' in attr else '',
+            float(attr['x']) / 100.0,
+            float(attr['y']) / 100.0,
+            float(attr['width']) / 100.0,
+            float(attr['height']) / 100.0)
+
+
+def convert_circle(attr):
+    return '\draw[{}] ({},{})circle ({})'.format(attr['stroke']
+                                                 if 'stroke' in attr else '',
+                                                 float(attr['cx']) / 100.0,
+                                                 float(attr['cy']) / 100.0,
+                                                 float(attr['r']) / 100.0)
+
+
+def convert(src):
+    cmds = []
+    print(src)
+    for el in src.getroot():
+        print(el.tag, el.attrib)
+        if el.tag == "polygon":
+            cmds.append(convert_poly(el.attrib))
+        elif el.tag == "polyline":
+            cmds.append(convert_polyline(el.attrib))
+        elif el.tag == "rect":
+            cmds.append(convert_rect(el.attrib))
+        elif el.tag == "circle":
+            cmds.append(convert_circle(el.attrib))
+    return cmds
+
+
+def read(file):
+    print(file)
+    return ElementTree.parse(file)
+
+
+def write(file, src):
+    with open(file, 'w') as f:
+        f.write('\n'.join(src))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('src', help="SVG file to convert to TIKZ")
+    parser.add_argument(
+        '-o', dest="dest", metavar="dest", help="output path of tikz source")
+    args = parser.parse_args()
+    src_file = args.src
+    if args.dest is None:
+        dest_file = args.src + '.tex'
+    file = read(src_file)
+    src = convert(file)
+    write(dest_file, src)
+
+
+if __name__ == "__main__":
+    main()

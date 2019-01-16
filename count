@@ -1,0 +1,117 @@
+#!/bin/bash
+
+function ParseColor(){
+  if [[ $2 ]]; then
+    printf "\033[48;2;%d;%d;%dm" 0x${1:0:2} 0x${1:2:2} 0x${1:4:2}
+  else
+    printf "\033[38;2;%d;%d;%dm" 0x${1:0:2} 0x${1:2:2} 0x${1:4:2}
+  fi
+}
+
+function ParseTime(){
+  DAY=$(($1 / 86400))
+  HOUR=$(($1 % 86400 / 3600))
+  MIN=$(($1 % 86400 % 3600 / 60))
+  SEC=$(($1 %86400 % 3600 % 60))
+  printf "%d %d %d %d" $DAY $HOUR $MIN $SEC 
+}
+
+SCALE=1000000
+
+function GetColor(){
+  if [[ $1 -ge $((9375 * $SCALE / 10000)) ]]; then
+    INDEX=15
+  elif [[ $1 -ge $((8750 * $SCALE / 10000)) ]]; then
+    INDEX=14
+  elif [[ $1 -ge $((8125 * $SCALE / 10000)) ]]; then
+    INDEX=13
+  elif [[ $1 -ge $((7500 * $SCALE / 10000)) ]]; then
+    INDEX=12
+  elif [[ $1 -ge $((6875 * $SCALE / 10000)) ]]; then
+    INDEX=11
+  elif [[ $1 -ge $((6250 * $SCALE / 10000)) ]]; then
+    INDEX=10
+  elif [[ $1 -ge $((5625 * $SCALE / 10000)) ]]; then
+    INDEX=9
+  elif [[ $1 -ge $((5000 * $SCALE / 10000)) ]]; then
+    INDEX=8
+  elif [[ $1 -ge $((4375 * $SCALE / 10000)) ]]; then
+    INDEX=7
+  elif [[ $1 -ge $((3750 * $SCALE / 10000)) ]]; then
+    INDEX=6
+  elif [[ $1 -ge $((3125 * $SCALE / 10000)) ]]; then
+    INDEX=5
+  elif [[ $1 -ge $((2500 * $SCALE / 10000)) ]]; then
+    INDEX=4
+  elif [[ $1 -ge $((1875 * $SCALE / 10000)) ]]; then
+    INDEX=3
+  elif [[ $1 -ge $((1250 * $SCALE / 10000)) ]]; then
+    INDEX=2
+  elif [[ $1 -ge $((625 * $SCALE / 10000)) ]]; then
+    INDEX=1
+  else
+    INDEX=0
+  fi
+  printf "%d" $INDEX
+}
+
+DATE="2018-09-01"
+S_DATE="2018-05-04"
+
+COLORS=("ff8861" "fd935d" "fb9e59" "f9a956" "f7b552" "f5c14e" "f3cd4b" "f1d947" "f0e644" "e9ee41" "d8ec3d" "c6ea3a" "b5e837" "a3e634" "92e431" "80e32e")
+
+TIME=$(date -d "$DATE" '+%s')
+S_TIME=$(date -d "$S_DATE" '+%s')
+C_TIME=$(date '+%s')
+
+D_TIME=$((TIME - C_TIME))
+NEG=0
+if [[ $D_TIME < 0 ]]; then
+  NEG=1
+  D_TIME=$((D_TIME * -1))
+fi
+T_TIME=$((TIME - S_TIME))
+
+
+PERC=$(( ( (T_TIME - D_TIME) * SCALE) / T_TIME))
+
+INDEX=$(GetColor $PERC)
+
+COLOR_FG=$(ParseColor ${COLORS[$INDEX]})
+COLOR_BG=$(ParseColor ${COLORS[$INDEX]} 1)
+
+function Time(){
+  read D H M S < <(ParseTime $D_TIME)
+  printf "%bT%s %02dd %02dh %02dm %02ds%b\n" $COLOR_FG $([[ $NEG  == 1 ]] && printf "-" || printf "+") $D $H $M $S "\033[0m"
+}
+function Bar(){
+  WIDTH=80
+  printf "%b[" $COLOR_FG
+  CHARS=$(( $PERC * $WIDTH / $SCALE))
+  REM=$(($WIDTH - $CHARS))
+  I=0
+  while [[ $I -lt $CHARS ]]; do
+    COLOR_ID=$(GetColor $(($I * $SCALE / $WIDTH)))
+    printf "%b" $(ParseColor ${COLORS[$COLOR_ID]})
+    printf "#"
+    I=$((I+1))
+  done
+  # printf "%0.s#" $(seq 1 $CHARS)
+  printf "%0.s " $(seq 1 $REM)
+  printf "]%b\n" "\033[0m" 
+}
+function Perc(){
+  printf "%b%%%s.%s%b\n" $COLOR_FG ${PERC:0:2} ${PERC:2:4} "\033[0m"
+}
+
+if [[ "$1" == "--time" ]]; then
+  Time
+elif [[ "$1" == "--bar" ]]; then
+  Bar
+elif [[ "$1" == "--perc" ]]; then
+  Perc
+elif [[ "$1" == "--all" ]]; then
+  Perc
+  Time
+  Bar
+fi
