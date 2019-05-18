@@ -69,11 +69,11 @@ def get_distro_icon(dist):
     if dist == 'Ubuntu':
         return '\uf31b'
     elif dist == "Arch":
-        return '\uf300'
+        return '\uf303'
     elif dist == "Debian":
-        return '\uf302'
+        return '\uf306'
     else:
-        return '\ue712'
+        return '\uf31a'
 
 def list_pkg():
     dist = get_distro()

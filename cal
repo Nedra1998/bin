@@ -1,0 +1,13 @@
+#!/bin/bash
+
+count=$1
+
+if [[ "$1" == "day" ]] || [[ "$1" == "d" ]] || [[ -z "$1" ]]; then
+  gcalcli --calendar=ardenrasmussen@lclark.edu agenda --width $(tput cols) $(date +%D) $(date --date="tomorrow" +%D)
+elif [[ "$1" == "week" ]] || [[ "$1" == "w" ]]; then
+  gcalcli --calendar=ardenrasmussen@lclark.edu calw --width $(($(tput cols)/8))
+elif [[ "$1" == "month" ]] || [[ "$1" == "m" ]]; then
+  gcalcli --calendar=ardenrasmussen@lclark.edu calm --width $(($(tput cols)/8))
+elif [[ $((count)) == $count ]]; then
+  gcalcli --calendar=ardenrasmussen@lclark.edu agenda --width $(tput cols) $(date +%D) $(date --date="$1 days" +%D)
+fi

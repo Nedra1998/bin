@@ -13,16 +13,24 @@ def get_file():
     """Gets file type, and files"""
     tex = glob.glob("*.tex")
     markdown = glob.glob("*.md")
+    dot = glob.glob("*.dot")
+    ps = glob.glob("*.ps")
     restructured_text = glob.glob("*.rst")
     len_tex = len(tex)
     len_md = len(markdown)
+    len_dot = len(dot)
+    len_ps = len(ps)
     len_rst = len(restructured_text)
-    if max(len_tex, len_rst, len_md) == len_tex:
+    if max(len_tex, len_rst, len_md, len_dot, len_ps) == len_tex:
         return tex, "latex"
-    elif max(len_tex, len_rst, len_md) == len_rst:
+    elif max(len_tex, len_rst, len_md, len_dot, len_ps) == len_rst:
         return restructured_text, "rst"
-    elif max(len_tex, len_rst, len_md) == len_md:
+    elif max(len_tex, len_rst, len_md, len_dot, len_ps) == len_md:
         return markdown, "md"
+    elif max(len_tex, len_rst, len_md, len_dot, len_ps) == len_dot:
+        return dot, "dot"
+    elif max(len_tex, len_rst, len_md, len_dot, len_ps) == len_ps:
+        return ps, "ps"
 
 
 def which(program):
@@ -61,7 +69,7 @@ def latexmk(files, args):
                 for f in files:
                     os.remove(f)
         else:
-            subprocess.run(["latexmk", "-pdf", "-shell-escape"])
+            subprocess.run(["latexmk", "-pdf", "--shell-escape"])
     elif which("pdflatex") != None:
         print("PDFLatex")
 
@@ -86,6 +94,26 @@ def mdmk(files, args):
         else:
             for file in files:
                 subprocess.run(["pandoc", file, "-o", os.path.splitext(file)[0] + ".pdf"])
+
+def dotmk(files, args):
+    if which("dot") != None:
+        if args['clean_all'] is True:
+            file = glob.glob("*.pdf")
+            for file in files:
+                os.remove(file)
+        else:
+            for file in files:
+                subprocess.run(["dot", file, "-Tpdf", "-o", os.path.splitext(file)[0] + ".pdf"])
+
+def psmk(files, args):
+    if which("ps2pdf") != None:
+        if args['clean_all'] is True:
+            file = glob.glob("*.pdf")
+            for file in files:
+                os.remove(file)
+        else:
+            for file in files:
+                subprocess.run(["ps2pdf", file, os.path.splitext(file)[0] + ".pdf"])
 
 
 def main():
@@ -121,6 +149,10 @@ def main():
             file_type = "md"
         elif ext == "rst":
             file_type = "rst"
+        elif ext == "dot":
+            file_type = "dot"
+        elif ext == "ps":
+            file_type = "ps"
     else:
         file, file_type = get_file()
     if file_type == "latex":
@@ -129,6 +161,10 @@ def main():
         rstmk(file, args)
     elif file_type == "md":
         mdmk(file, args)
+    elif file_type == "dot":
+        dotmk(file, args)
+    elif file_type == "ps":
+        psmk(file, args)
 
 
 if __name__ == "__main__":

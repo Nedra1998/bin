@@ -1,0 +1,13 @@
+#!/bin/bash
+
+START_TIME=$(date +%s)
+END_TIME=$(date -d"$1" +%s)
+DIFF_TIME=$((END_TIME-START_TIME))
+
+TITLE="ALARM"
+CONTENT=$(date -d@${END_TIME})
+
+printf "Alarm set for $CONTENT\n"
+
+sleep $DIFF_TIME && notify-send --urgency=critical "$TITLE" "$CONTENT" &
+

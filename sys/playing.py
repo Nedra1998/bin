@@ -94,13 +94,20 @@ def get_play_pause(status):
     else:
         return ''
 
+def get_time(micro):
+    minute = int(micro / 6e7)
+    micro -= minute * 6e7
+    second = int(micro / 1e6)
+    return "{}:{:02}".format(minute, second)
 
 def main():
     status = get_data()
     data = dict()
     if status != -1:
         data = get_dict()
+        # print(data)
         data['artist'] = ' '.join(data['artist'])
+        data['length'] = get_time(float(data['length'].split(' ')[1]))
     data['status'] = str(status)
     data['play_pause'] = get_play_pause(status)
     data['next'] = '\uf051'

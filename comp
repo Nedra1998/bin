@@ -1,0 +1,70 @@
+#!/usr/bin/python3
+import os
+import glob
+import sys
+import subprocess
+import time
+
+
+def run(cmd, args, reps):
+    avg = 0.0
+    min_t = 1e20
+    max_t = 0
+    print(
+        "\033[1;93m{:{}} [RUNNING ]\033[0m".format(cmd, 26), end='', flush=True)
+    for i in range(reps):
+        start = time.time()
+        # subprocess.run(
+        #     [os.path.join(os.getcwd(), cmd)] + args,
+        #     stdout=subprocess.PIPE,
+        #     stderr=subprocess.PIPE)
+        subprocess.run(
+            [os.path.join(os.getcwd(), cmd)] + args)
+        end = time.time()
+        diff = end - start
+        max_t = max(max_t, diff)
+        min_t = min(min_t, diff)
+        avg += diff
+    print("\033[G\033[1;92m{:{}} [COMPLETE]\033[0m".format(cmd, 26))
+    return min_t, (avg / reps), max_t
+
+
+def main():
+    exes = []
+    args = []
+    reps = 10
+    FILE = False
+    for arg in sys.argv[1:]:
+        if os.path.isfile(arg) and os.access(arg, os.X_OK):
+            exes.append(arg)
+        elif arg.startswith('+'):
+            reps = int(arg[1:])
+        elif arg.startswith("-o="):
+            FILE = arg[3:]
+        else:
+            args.append(arg)
+    if not exes:
+        for file in glob.glob("*"):
+            if os.path.isfile(file) and os.access(file, os.X_OK) and not file.endswith('.so'):
+                exes.append(file)
+    exes = sorted(exes)
+    print("\033[1;96m{}\033[0m".format("=" * 37))
+    print("\033[1;96m{:^{}}\033[0m".format("RUNNING", 37))
+    print("\033[1;96m{}\033[0m".format("=" * 37))
+    data = sorted([(x, run(x, args, reps)) for x in exes], key=lambda x: x[1])
+    print("\033[1;96m{}\033[0m".format("=" * 37))
+    print("\033[1;96m{:^{}}\033[0m".format("RESULTS", 37))
+    print("\033[1;96m{}\033[0m".format("=" * 37))
+    for row in data:
+        print(
+            "\033[1;94m{:{}}\033[0m\033[1;93m {:8f}\033[1;92m {:8f}\033[1;91m {:8f}\033[0m".
+            format(row[0], 10, row[1][0], row[1][1], row[1][2]))
+    if FILE:
+        with open(FILE, 'w') as file:
+            data = sorted(data, key=lambda x: x[1])
+            for row in data:
+                file.write("{} {} {} {}\n".format(row[0], row[1][0], row[1][1], row[1][2]))
+
+
+if __name__ == '__main__':
+    main()

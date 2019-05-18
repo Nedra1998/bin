@@ -1,0 +1,120 @@
+#!/bin/bash
+
+DIRS=()
+
+function status() {
+  DIR="$(pwd)"
+  INDEX="$(command git status --porcelain -b 2> /dev/null)"
+
+  if $(echo "$INDEX" | grep -E '^\?\? ' &> /dev/null); then
+    DIR="\033[34m\033[39m\u2800$DIR"
+  else
+    DIR="\u2800\u2800$DIR"
+  fi
+
+  if $(echo "$INDEX" | grep '^A[ MDAU ] ' &> /dev/null); then
+    DIR="\033[92m\033[39m\u2800$DIR"
+  elif $(echo "$INDEX" | grep '^UA' &> /dev/null); then
+    DIR="\033[92m\033[39m\u2800$DIR"
+  else
+    DIR="\u2800\u2800$DIR"
+  fi
+
+  if $(echo "$INDEX" | grep '^M[ MD ] ' &> /dev/null); then
+    DIR="\033[93m\033[39m\u2800$DIR"
+  elif $(echo "$INDEX" | grep '^[ MARC ]M ' &> /dev/null); then
+    DIR="\033[93m\033[39m\u2800$DIR"
+  else
+    DIR="\u2800\u2800$DIR"
+  fi
+
+    # Check for renamed files
+  if $(echo "$INDEX" | grep '^R[ MD] ' &> /dev/null); then
+    DIR="\033[95m\033[39m\u2800$DIR"
+  else
+    DIR="\u2800\u2800$DIR"
+  fi
+
+  # Check for deleted files
+  if $(echo "$INDEX" | grep '^[MARCDU ]D ' &> /dev/null); then
+    DIR="\033[91m\033[39m\u2800$DIR"
+  elif $(echo "$INDEX" | grep '^D[ UM] ' &> /dev/null); then
+    DIR="\033[91m\033[39m\u2800$DIR"
+  else
+    DIR="\u2800\u2800$DIR"
+  fi
+
+  # Check for stashes
+  if $(git rev-parse --verify refs/stash >/dev/null 2>&1); then
+    DIR="\033[92m$\033[39m\u2800$DIR"
+  else
+    DIR="\u2800\u2800$DIR"
+  fi
+
+  # Check for unmerged files
+  if $(echo "$INDEX" | grep '^U[UDA] ' &> /dev/null); then
+    DIR="\033[96m=\033[39m\u2800$DIR"
+  elif $(echo "$INDEX" | grep '^AA ' &> /dev/null); then
+    DIR="\033[96m=\033[39m\u2800$DIR"
+  elif $(echo "$INDEX" | grep '^DD ' &> /dev/null); then
+    DIR="\033[96m=\033[39m\u2800$DIR"
+  elif $(echo "$INDEX" | grep '^[DA]U ' &> /dev/null); then
+    DIR="\033[96m=\033[39m\u2800$DIR"
+  else
+    DIR="\u2800\u2800$DIR"
+  fi
+
+  # Check whether branch is ahead
+  local is_ahead=false
+  if $(echo "$INDEX" | grep '^## [^ ]\+ .*ahead' &> /dev/null); then
+    is_ahead=true
+  fi
+
+  # Check whether branch is behind
+  local is_behind=false
+  if $(echo "$INDEX" | grep '^## [^ ]\+ .*behind' &> /dev/null); then
+    is_behind=true
+  fi
+
+  # Check wheather branch has diverged
+  if [[ "$is_ahead" == true && "$is_behind" == true ]]; then
+    DIR="\033[96m⇕\033[39m\u2800$DIR"
+  elif [[ "$is_ahead" == true ]]; then
+    DIR="\033[96m⇡\033[39m\u2800$DIR"
+  elif [[ "$is_behind" == true ]]; then
+    DIR="\033[96m⇣\033[39m\u2800$DIR"
+  else
+    DIR="\u2800\u2800$DIR"
+  fi
+
+  DIRS+=("$DIR")
+}
+
+function scan() {
+  for dir in $*; do
+    if [[ -d "$dir" ]]; then
+      cd "$dir"
+      if [[ -d ".git" ]]; then
+        status "$dir"
+      else
+        scan *
+      fi
+      cd "../"
+    fi
+  done
+}
+
+scan *
+
+printf "Git Repo Status Check\n"
+
+ID=0
+for DIR in ${DIRS[@]}; do
+  if [[ $((ID % 2)) == 0 ]]; then
+    printf "$DIR\n"
+  else
+    printf "\033[40m$DIR\033[0m\n"
+  fi
+  ID=$((ID+1))
+done
+
