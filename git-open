@@ -11,5 +11,5 @@ fi
 
 url=$url/tree/$branch
 {
-    sensible-browser $url &
+    chromium $url &
 } &> /dev/null
